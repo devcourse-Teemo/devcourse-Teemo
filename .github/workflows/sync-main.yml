@@ -20,9 +20,14 @@ jobs:
           git config --global user.name "github-actions[bot]"
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
 
-      - name: Merge dev into main
+      - name: Rebase main onto dev
         run: |
+          git fetch origin
           git checkout main
-          git pull origin main
-          git merge --no-ff dev -m "Auto-merge dev into main"
-          git push origin main
+          git rebase dev || (git rebase --abort && exit 1)
+
+      - name: Push updated main branch
+        env:
+          PAT_TOKEN: ${{ secrets.PAT_TOKEN }}
+        run: |
+          git push https://${PAT_TOKEN}@github.com/${{ github.repository }}.git main --force
