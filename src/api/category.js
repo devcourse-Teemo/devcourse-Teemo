@@ -81,4 +81,25 @@ export const categoryAPI = {
       throw error;
     }
   },
+
+  /**
+   * @description 카테고리 id로 카테고리 이름 조회
+   * @param {*} categoryId
+   * @returns {Array} 검색된 카테고리 목록을 생성일 기준 내림차순으로 반환
+   */
+  async getCategoryNameById(categoryId) {
+    try {
+      const { data, error } = await supabase
+        .from("category")
+        .select("name")
+        .eq("id", categoryId)
+        .single();
+
+      if (error) throw error;
+      return data;
+    } catch (error) {
+      console.error(error);
+      throw error;
+    }
+  },
 };

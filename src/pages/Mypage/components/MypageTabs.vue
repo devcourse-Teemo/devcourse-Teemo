@@ -127,7 +127,11 @@ watchEffect(async () => {
           class="flex gap-4 w-full bg-black-6 p-4 rounded-lg"
         >
           <div class="flex justify-center items-center">
-            <img :src="grade.imgSrc" class="w-16 h-20" alt="등급 이미지" />
+            <img
+              :src="grade.imgSrc"
+              class="w-16 h-20 object-cover"
+              alt="등급 이미지"
+            />
           </div>
           <div class="flex flex-col gap-2">
             <p>

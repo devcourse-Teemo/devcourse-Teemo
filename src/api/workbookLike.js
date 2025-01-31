@@ -45,9 +45,19 @@ const getWorkbookLikeCount = async (workbook_id) => {
   return count;
 };
 
+// DELETE
+const remove = async (uid, workbook_id) => {
+  const { data, error } = await supabase
+    .from("workbook_like")
+    .delete()
+    .eq("uid", uid)
+    .eq("workbook_id", workbook_id);
+};
+
 export const workbookLikeAPI = {
   add,
   getUid,
   getWorkbookLike,
   getWorkbookLikeCount,
+  remove,
 };

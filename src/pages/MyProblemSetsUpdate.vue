@@ -1,8 +1,7 @@
 <script setup>
 import { ref, onMounted, provide } from "vue";
-import { useRoute } from "vue-router";
-import { useRouter } from "vue-router";
-import { Dialog, ToggleSwitch } from "primevue";
+import { useRoute, useRouter } from "vue-router";
+import { Dialog, ToggleSwitch, useConfirm, useToast } from "primevue";
 
 import { authAPI } from "@/api/auth";
 import { problemAPI } from "@/api/problem";
@@ -11,16 +10,18 @@ import Search from "@/components/layout/Search.vue";
 import ProblemTable from "@/components/layout/ProblemTable.vue";
 import pen from "@/assets/icons/my-problem-sets-update/pen.svg";
 import share from "@/assets/icons/my-problem-sets-update/share.svg";
+import ConfirmModal from "@/components/layout/ConfirmModal.vue";
 
+const toast = useToast();
 const route = useRoute();
 const router = useRouter();
+const confirm = useConfirm();
 
 const uid = ref(null);
 const title = ref(null);
 const problems = ref([]);
 const shared = ref(null);
 const myProblems = ref([]);
-const workbookId = ref(null);
 const description = ref(null);
 const addedProblems = ref([]);
 const workbookProblem = ref([]);
@@ -39,33 +40,55 @@ const problemAdd = (problem) => {
     ({ id }) => id === problem.id,
   );
   if (isAlreadyAdded) {
-    alert("이미 추가된 문제입니다!");
+    toast.add({
+      severity: "error",
+      summary: "문제집 추가 실패",
+      detail: "이미 추가된 문제입니다!",
+      life: 3000,
+    });
     return;
   }
 
-  const realAdd = confirm("해당 문제를 문제집에 추가하시겠습니까?");
-  if (realAdd) {
-    addedProblems.value.push(problem);
-    addedProblems.value = addedProblems.value.reduce((acc, current) => {
-      if (acc.findIndex(({ id }) => id === current.id) === -1) {
-        acc.push(current);
-      }
-      return acc;
-    }, []);
-  }
-  return;
+  confirm.require({
+    group: "add",
+    header: "해당 문제를 문제집에 추가하시겠습니까?",
+    message: "추가하시려면 '추가' 버튼을 클릭하세요",
+    accept: () => {
+      addedProblems.value.push(problem);
+      addedProblems.value = addedProblems.value.reduce((acc, current) => {
+        if (acc.findIndex(({ id }) => id === current.id) === -1) {
+          acc.push(current);
+        }
+        return acc;
+      }, []);
+    },
+    reject: () => {},
+  });
 };
 provide("problemAdd", problemAdd);
 
 const addedProblemDelete = (problem) => {
-  const realDelete = confirm("해당 문제를 현재 추가한 항목에서 뺴시겠습니까?");
-  if (realDelete) {
-    addedProblems.value = addedProblems.value.filter(
-      ({ id }) => id !== problem.id,
-    );
-  }
+  confirm.require({
+    group: "addedListDelete",
+    header: "해당 문제를 현재 추가한 항목에서 빼시겠습니까?",
+    message: "문제를 빼시려면 '빼기' 버튼을 클릭하세요",
+    accept: () => {
+      addedProblems.value = addedProblems.value.filter(
+        ({ id }) => id !== problem.id,
+      );
+    },
+    reject: () => {},
+  });
 };
 provide("addedProblemDelete", addedProblemDelete);
+
+const problemDelete = async () => {
+  const workbookProblemData = await workbookAPI.getWorkbookProblems(
+    route.params.problemSetId,
+  );
+  problems.value = workbookProblemData;
+};
+provide("problemDelete", problemDelete);
 
 const problemSetUpdate = async () => {
   await workbookAPI.update(
@@ -74,7 +97,7 @@ const problemSetUpdate = async () => {
       description: description.value,
       shared: shared.value,
     },
-    workbookId.value,
+    route.params.problemSetId,
   );
   router.push(`/problem-set-board-detail/${route.params.problemSetId}`);
 };
@@ -87,18 +110,39 @@ const workbookProblemAdd = async () => {
     workbook_id: route.params.problemSetId,
   }));
   await workbookAPI.workbookProblemAdd(workbookProblem.value);
-  router.go(0);
+  workbookProblemDataUpdate();
 };
+
+const workbookProblemDataUpdate = async () => {
+  const workbookProblemData = await workbookAPI.getWorkbookProblems(
+    route.params.problemSetId,
+  );
+  problems.value = workbookProblemData;
+};
+
+const myProblemsDataUpdate = async () => {
+  const myProblemsData = await problemAPI.getAllByUserId(uid.value);
+
+  const filteredProblems = myProblemsData.filter(
+    (problem) =>
+      !problems.value.some(
+        (workbookProblem) => workbookProblem.id === problem.id,
+      ),
+  );
+
+  myProblems.value = filteredProblems;
+};
+provide("myProblemsDataUpdate", myProblemsDataUpdate);
 
 onMounted(async () => {
   const workbookData = await workbookAPI.getOne(route.params.problemSetId);
-  workbookId.value = workbookData["id"];
+
   shared.value = workbookData["shared"];
   title.value = workbookData["title"];
   description.value = workbookData["description"];
 
   const workbookProblemData = await workbookAPI.getWorkbookProblems(
-    workbookData["id"],
+    route.params.problemSetId,
   );
   problems.value = workbookProblemData;
 
@@ -224,5 +268,8 @@ onMounted(async () => {
       </div>
     </div>
   </Dialog>
+
+  <ConfirmModal group="add" acceptButtonName="추가" />
+  <ConfirmModal group="addedListDelete" acceptButtonName="빼기" />
 </template>
 <style scoped></style>

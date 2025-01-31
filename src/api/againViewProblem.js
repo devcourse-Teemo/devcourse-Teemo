@@ -2,6 +2,53 @@ import { supabase } from "./index.js";
 
 export const againViewProblemAPI = {
   /**
+   * @description 특정 유저의 다시 볼 문제 상태 조회
+   * @param {number} userId - 유저 ID
+   * @returns {object | null} 다시 볼 문제 상태 데이터 또는 null
+   */
+  async getAllByUserId(userId) {
+    try {
+      const { data, error } = await supabase
+        .from("again_view_problem")
+        .select(`
+          problem:problem_id (
+            id,
+            question,
+            answer,
+            explanation,
+            created_at,
+            updated_at,
+            origin_source,
+            problem_type,
+            title,
+            category_id,
+            uid,
+            image_src,
+            option_one,
+            option_two,
+            option_three,
+            option_four,
+            shared,
+            likes:problem_like(count)
+          )
+        `)
+        .eq("uid", userId);
+  
+      if (error) throw error;
+  
+      // 데이터 구조를 flat하게 변환
+      return data.map(item => ({
+        ...item.problem,
+        likes: [{ count: item.problem.likes[0]?.count || 0 }]
+      }));
+  
+    } catch (error) {
+      console.error(error);
+      throw error;
+    }
+  },
+
+  /**
    * @description 특정 문제의 다시 볼 문제 상태 조회
    * @param {number} userId - 유저 ID
    * @param {number} problemId - 조회할 문제 ID

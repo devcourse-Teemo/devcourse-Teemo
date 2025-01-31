@@ -1,21 +1,24 @@
 <script setup>
 import { ref, onMounted } from "vue";
 import { useRoute, useRouter } from "vue-router";
-import { Menu } from "primevue";
+import { Menu, useConfirm, useToast } from "primevue";
 
-import CommentList from "@/pages/problem-set-detail/components/CommentList.vue";
-import addOption from "@/assets/icons/problem-set-board-detail/add-option.svg";
-import thumbsUp from "@/assets/icons/problem-set-board-detail/thumbs-up.svg";
-import testCenterEnter from "@/assets/icons/problem-set-board-detail/test-center-enter.svg";
-import like from "@/assets/icons/problem-set-board-detail/like.svg";
-import ProblemTable from "@/components/layout/ProblemTable.vue";
-import { workbookAPI } from "@/api/workbook";
 import { userAPI } from "@/api/user";
-import { workbookLikeAPI } from "@/api/workbookLike";
 import { authAPI } from "@/api/auth";
+import { workbookAPI } from "@/api/workbook";
+import { workbookLikeAPI } from "@/api/workbookLike";
+import ProblemTable from "@/components/layout/ProblemTable.vue";
+import like from "@/assets/icons/problem-set-board-detail/like.svg";
+import thumbsUp from "@/assets/icons/problem-set-board-detail/thumbs-up.svg";
+import addOption from "@/assets/icons/problem-set-board-detail/add-option.svg";
+import CommentList from "@/pages/problem-set-detail/components/CommentList.vue";
+import testCenterEnter from "@/assets/icons/problem-set-board-detail/test-center-enter.svg";
+import ConfirmModal from "@/components/layout/ConfirmModal.vue";
 
+const toast = useToast();
 const route = useRoute();
 const router = useRouter();
+const confirm = useConfirm();
 
 const itemsPerPage = 10;
 
@@ -45,22 +48,37 @@ const problemSetDelete = async () => {
 };
 const problemSetShare = async () => {
   if (workbookAnotherUserCheck.value) {
-    alert("이미 공유 받으신 문제집입니다.");
+    toast.add({
+      severity: "error",
+      summary: "문제집 공유 실패",
+      detail: "이미 공유 받으신 문제집입니다.",
+      life: 3000,
+    });
     return;
   } else {
     if (share.value) {
-      const realShare = confirm("해당 문제집을 공유 받으시겠습니까?");
-      if (realShare) {
-        await workbookAPI.sharedWorkbookAdd([
-          {
-            workbook_id: route.params.problemSetId,
-            uid: uid.value,
-          },
-        ]);
-        router.push("/my-problem-sets");
-      } else return;
+      confirm.require({
+        group: "share",
+        header: "해당 문제집을 공유 받으시겠습니까?",
+        message: "공유 받으시려면 '공유 받기' 버튼을 클릭하세요",
+        accept: async () => {
+          await workbookAPI.sharedWorkbookAdd([
+            {
+              workbook_id: route.params.problemSetId,
+              uid: uid.value,
+            },
+          ]);
+          router.push("/my-problem-sets");
+        },
+        reject: () => {},
+      });
     } else {
-      alert("해당 문제집은 제작자가 공유 설정을 하지 않으셨습니다.");
+      toast.add({
+        severity: "error",
+        summary: "문제집 공유 실패",
+        detail: "해당 문제집은 제작자가 공유 설정을 하지 않으셨습니다.",
+        life: 3000,
+      });
       return;
     }
   }
@@ -112,18 +130,15 @@ const handlePageChange = async (newPage) => {
 
 const handleLike = async () => {
   if (problemSetLike.value) {
-    alert("한번 설정하신 좋아요는 해제하실 수 없습니다.");
+    problemSetLike.value = false;
+    await workbookLikeAPI.remove(uid.value, route.params.problemSetId);
+    await workbookLikeFunction();
     return;
   }
 
-  const realLike = confirm(
-    "한번 설정한 문제집 좋아요는 변경이 불가능합니다. 계속 진행하시겠습니까?",
-  );
-  if (realLike) {
-    problemSetLike.value = true;
-    await workbookLikeAPI.add(uid.value, route.params.problemSetId);
-    await workbookLikeFunction();
-  }
+  problemSetLike.value = true;
+  await workbookLikeAPI.add(uid.value, route.params.problemSetId);
+  await workbookLikeFunction();
 };
 
 const workbookLikeFunction = async () => {
@@ -255,6 +270,9 @@ onMounted(async () => {
     appendTo="body"
     class="p-menu w-[200px] font-pretend"
   />
+
+  <ConfirmModal group="share" accept-button-name="공유 받기" />
+  <ConfirmModal group="like" accept-button-name="좋아요" />
 </template>
 
 <style scoped></style>

@@ -3,16 +3,43 @@ import Profile from "@/components/layout/Profile.vue";
 import Grade from "@/components/layout/Grade.vue";
 import UserProfileTabs from "./components/UserProfileTabs.vue";
 import { userAPI } from "@/api/user";
-import { watchEffect, ref } from "vue";
+import { ref, watch } from "vue";
 import { useRoute } from "vue-router";
+import { useAuthStore } from "@/store/authStore";
+import { storeToRefs } from "pinia";
+import { useRouter } from "vue-router";
+import { useToast } from "primevue";
 
 const route = useRoute();
+const router = useRouter();
+const toast = useToast();
+const authStore = useAuthStore();
+const { user: currentUser } = storeToRefs(authStore);
 const user = ref();
 
-watchEffect(async () => {
-  const data = await userAPI.getOne(route.params.userId);
-  user.value = data;
-});
+watch(
+  () => route.params,
+  async () => {
+    user.value = await userAPI.getOne(route.params.userId);
+    if (!user.value) {
+      router.replace("/mypage");
+      toast.add({
+        severity: "error",
+        summary: "유저 정보 로딩 에러",
+        detail: "해당 유저 정보를 불러올 수 없습니다.",
+        life: 3000,
+      });
+      return;
+    }
+    if (currentUser.value.id === user.value.id) {
+      router.replace("/mypage");
+      return;
+    }
+  },
+  {
+    immediate: true,
+  },
+);
 </script>
 <template>
   <div class="flex flex-col gap-16">
@@ -22,10 +49,11 @@ watchEffect(async () => {
         :img-src="user?.avatar_url"
         :name="user?.name"
         :email="user?.email"
+        isUserProfile
       />
       <Grade :user-id="route.params.userId" />
     </section>
-    <UserProfileTabs />
+    <UserProfileTabs :user-id="route.params.userId" />
   </div>
 </template>
 <style scoped></style>
