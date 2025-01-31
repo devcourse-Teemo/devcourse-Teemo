@@ -27,11 +27,30 @@ const getAllByUserId = async (userId) => {
   try {
     const { data, error } = await supabase
       .from("problem")
-      .select("*")
+      .select(`
+        *,
+        likes: problem_like(count),
+        history:problem_history(
+          status,
+          created_at,
+          uid
+        )
+      `)
       .eq("uid", userId);
 
     if (error) throw error;
-    return data;
+
+    const processedData = data.map(problem => ({
+      ...problem,
+      likes: problem.likes[0]?.count || 0,
+      latest_status: problem.history
+        ?.filter(h => h.uid === userId)
+        .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))[0]?.status || 'none'
+    }));
+
+    console.log('처리된 데이터:', processedData);
+
+    return processedData;
   } catch (error) {
     console.error(error);
   }
@@ -44,11 +63,9 @@ const getAllByUserId = async (userId) => {
  */
 const getAllSharedByUserId = async (userId) => {
   try {
-    const { data, error } = await supabase
-      .from("problem")
-      .select("*")
-      .eq("uid", userId)
-      .eq("shared", true);
+    const { data, error } = await supabase.rpc("get_all_shared_problems", {
+      user_id: userId,
+    });
 
     if (error) throw error;
     return data;
@@ -70,6 +87,34 @@ const getAllSharedByUserId = async (userId) => {
 const search = async (userId, keyword, startDate, endDate, status) => {
   try {
     const { data, error } = await supabase.rpc("search_problems", {
+      user_id: userId,
+      keyword,
+      start_date: startDate,
+      end_date: endDate,
+      status,
+    });
+    console.log(data);
+
+    if (error) throw error;
+    return data;
+  } catch (error) {
+    console.error(error);
+  }
+};
+
+/**
+ *
+ * @description 보관한 문제집 검색에 사용하는 API
+ * @param {String} userId
+ * @param {String} keyword 검색 키워드
+ * @param {String} status 상태
+ * @param {String} startDate YYYY-MM-DD
+ * @param {String} endDate YYYY-MM-DD
+ * @returns
+ */
+const searchForUser = async (userId, keyword, startDate, endDate, status) => {
+  try {
+    const { data, error } = await supabase.rpc("search_problems_for_user", {
       user_id: userId,
       keyword,
       start_date: startDate,
@@ -296,6 +341,63 @@ const checkIsShared = async (uid, problem_id) => {
 };
 
 /**
+ * @description 사용자가 공유받은 문제들을 가져오는 API
+ * @param {*} uid - 사용자 ID
+ * @returns {Array} 사용자가 공유받은 문제들의 배열
+ */
+const getUserSharedProblems = async (uid) => {
+  try {
+    const { data, error } = await supabase
+      .from("shared_problem")
+      .select(`
+        problem:problem_id (
+          id,
+          question,
+          answer,
+          explanation,
+          created_at,
+          updated_at,
+          origin_source,
+          problem_type,
+          title,
+          category_id,
+          uid,
+          image_src,
+          option_one,
+          option_two,
+          option_three,
+          option_four,
+          shared,
+          likes:problem_like(count),
+          history:problem_history(
+            status,
+            created_at,
+            uid
+          )
+        )
+      `)
+      .eq("uid", uid);
+
+    if (error) throw error;
+
+    const processedData = data.map(item => ({
+      ...item.problem,
+      likes: [{ count: item.problem.likes[0]?.count || 0 }],
+      latest_status: item.problem.history
+        ?.filter(h => h.uid === uid)
+        .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))[0]?.status || 'none'
+    }));
+
+    console.log('처리된 공유 문제 데이터:', processedData);
+    return processedData;
+
+  } catch (error) {
+    console.error("사용자의 공유된 문제를 가져오는 중 오류 발생:", error);
+    return [];
+  }
+};
+
+/**
  * @description 문제를 사용자의 북마크에 추가
  * @param {number} problem_id - 북마크할 문제 ID
  * @returns {object} 생성된 북마크 데이터
@@ -377,11 +479,13 @@ export const problemAPI = {
   getAllSharedByUserId,
   getById,
   search,
+  searchForUser,
   add,
   addMultiple,
   update,
   deleteOne,
   checkIsShared,
+  getUserSharedProblems,
   addShare,
   removeShare,
   getRandom,

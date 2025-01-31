@@ -3,38 +3,44 @@ import { supabase } from "./index.js";
 export const followAPI = {
   /**
    * @description 사용자 팔로우하기
-   * @param {string} follow_id - 팔로우 받는 사용자 ID
+   * @param {string} userId - 팔로우 하는 사용자 ID
+   * @param {string} target_uid - 팔로우 받는 사용자 ID
    * @returns {object} 생성된 팔로우 데이터
    */
-  async followUser(follow_id) {
+  async followUser(userId, target_uid) {
     try {
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
-      const uid = user.id;
-
-      if (uid === follow_id) {
+      if (userId === target_uid) {
         throw new Error("자기 자신을 팔로우할 수 없습니다.");
-      }
-
-      const { data: existing } = await supabase
-        .from("follow")
-        .select("id")
-        .eq("uid", uid)
-        .eq("follow_id", follow_id)
-        .single();
-
-      if (existing) {
-        throw new Error("이미 팔로우하고 있는 사용자입니다.");
       }
 
       const { data, error } = await supabase
         .from("follow")
-        .insert([{ follow_id }])
-        .select();
+        .insert([{ target_uid }])
+        .select("*, user: user_info!target_uid(name)")
+        .single();
 
       if (error) throw error;
-      return data;
+      return { data, error };
+    } catch (error) {
+      console.error(error);
+      return { error };
+    }
+  },
+
+  /**
+   * @description 사용자 언팔로우하기
+   * @param {string} target_uid - 언팔로우 당하는 사용자 ID
+   * @returns {boolean} 성공 여부
+   */
+  async unfollowUser(target_uid) {
+    try {
+      const { error } = await supabase
+        .from("follow")
+        .delete()
+        .eq("target_uid", target_uid);
+
+      if (error) throw error;
+      return true;
     } catch (error) {
       console.error(error);
       throw error;
@@ -42,22 +48,25 @@ export const followAPI = {
   },
 
   /**
-   * @description 사용자 언팔로우하기
-   * @param {string} follow_id - 언팔로우 당하는 사용자 ID
-   * @returns {boolean} 성공 여부
+   *
+   * @param {*} userId 팔로잉 여부를 확인할 사용자 ID
+   * @param {*} target_uid 확인할 대상 사용자 ID
+   * @returns
    */
-  async unfollowUser(follow_id) {
+  async checkIsFollowing(userId, target_uid) {
     try {
-      const { error } = await supabase
+      const { data, error } = await supabase
         .from("follow")
-        .delete()
-        .eq("follow_id", follow_id);
+        .select("id")
+        .eq("uid", userId)
+        .eq("target_uid", target_uid)
+        .maybeSingle();
 
       if (error) throw error;
-      return true;
+      return !!data;
     } catch (error) {
       console.error(error);
-      throw error;
+      return false;
     }
   },
 

@@ -129,7 +129,8 @@ const getAllSharedByUserId = async (uid) => {
         `
         *,
         user: user_info!uid(*),
-        problems: workbook_problem(*)
+        problems: workbook_problem(*),
+        likes: workbook_like(id)
       `,
       )
       .eq("uid", uid)
