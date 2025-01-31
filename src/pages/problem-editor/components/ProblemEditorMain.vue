@@ -233,8 +233,32 @@ watchEffect(() => {
   }
 });
 
+onBeforeMount(async () => {
+  const categoryData = await categoryAPI.getAll();
+  category.push(...categoryData);
+  localProblem.type = localProblem.type === "" ? "4지선다" : localProblem.type;
+});
+
+const updateValidity = () => {
+  localProblem.validity.category = localProblem.category?.length > 0;
+  localProblem.validity.title = localProblem.title?.length > 0 ? true : false;
+  localProblem.validity.question =
+    localProblem.question?.length > 0 ? true : false;
+  localProblem.validity.answer = localProblem.answer?.length > 0 ? true : false;
+  localProblem.validity.origin_source =
+    localProblem.origin_source?.length > 0 ? true : false;
+};
+
+// Call updateValidity inside watchEffect so Vue tracks dependencies correctly
+watchEffect(() => {
+  updateValidity();
+});
+
 const submitProblem = () => {
   const categoryRaw = toRaw(localProblem.category);
+  updateValidity();
+  localProblem.isValid = Object.values(localProblem.validity).every(Boolean);
+  localProblem.visited = true;
   emits("submitProblem", currentIdx.value, {
     ...localProblem,
     category: categoryRaw,
@@ -242,19 +266,13 @@ const submitProblem = () => {
   console.log(localProblem);
 };
 
-// 문제 변경시 제출, 업데이트
-onBeforeUnmount(() => {
-  submitProblem();
-});
-
 defineExpose({
   submitProblem,
 });
 
-onBeforeMount(async () => {
-  const categoryData = await categoryAPI.getAll();
-  category.push(...categoryData);
-  localProblem.type = localProblem.type === "" ? "4지선다" : localProblem.type;
+// 문제 변경시 제출, 업데이트
+onBeforeUnmount(() => {
+  submitProblem();
 });
 </script>
 
@@ -292,17 +310,21 @@ onBeforeMount(async () => {
             </li>
           </ul>
         </fieldset>
-        <fieldset class="flex items-center gap-2 mb-4">
-          <label for="category" class="mr-1">카테고리</label>
+        <fieldset class="addDivider block mb-4">
+          <label for="category" class="mr-4"
+            >카테고리 <sup class="text-black-2">*</sup></label
+          >
           <MultiSelect
             v-model="localProblem.category"
             display="chip"
             :options="category"
             optionLabel="name"
             filter
+            :invalid="localProblem.category?.length == 0"
             :selection-limit="1"
-            class="md:h-9 items-center md:w-60 font-regular text-sm py-2 mr-2"
+            class="md:h-9 items-center md:w-60 font-regular text-sm py-2 mr-6 relative border border-red"
             @filter="(e) => onFilterCategory(e)"
+            panel-class="custom-overlay"
           >
             <template #footer>
               <div class="p-3 flex justify-between">
@@ -319,37 +341,29 @@ onBeforeMount(async () => {
             </template>
           </MultiSelect>
 
-          <label for="shared"> 공개 여부 </label>
-          <ToggleSwitch v-model="localProblem.shared" name="shared" />
+          <label for="shared" class="mr-2"> 공개 여부 </label>
+          <ToggleSwitch
+            v-model="localProblem.shared"
+            name="shared"
+            class="align-middle"
+          />
         </fieldset>
-        <fieldset class="addDivider flex flex-col gap-2 mb-4">
-          <div class="flex items-center gap-4">
-            <label for="origin_source">출처</label>
-            <InputText
-              type="text"
-              v-model="localProblem.origin_source"
-              name="origin_source"
-              class="md:h-10 flex-grow"
-            />
-          </div>
-          <p class="flex gap-2 text-black-1 items-center text-xs">
-            <img :src="alarmPath" alt="사용자 출처 저작권 안내 문구" />문제의
-            출처를 최대한 자세하게 써주세요. 타인의 문제를 허락없이 공유하여
-            법적인 제제를 받는 경우, 풀고에서 책임지지 않습니다.
-          </p>
-        </fieldset>
+
         <fieldset class="addDivider flex flex-col gap-4 mb-4">
-          <legend class="my-2">문제 {{ currentIdx + 1 }}</legend>
+          <legend class="my-2">
+            문제 {{ currentIdx + 1 }} <sup class="text-black-2">*</sup>
+          </legend>
           <InputText
             type="text"
             v-model="localProblem.title"
             name="problem"
             class="md:h-10 w-full"
             placeholder="문제의 제목을 작성해 주세요."
+            :invalid="localProblem.title == ''"
             @change="(e) => emits('updateListItem', 'TITLE', e.target.value)"
           />
           <div ref="questionEditor"></div>
-          <p>답</p>
+          <p>답 <sup class="text-black-2">*</sup></p>
           <div
             v-if="localProblem.type == '4지선다'"
             v-for="(_, idx) in 4"
@@ -363,6 +377,7 @@ onBeforeMount(async () => {
               :checked="localProblem.answer === String(idx + 1)"
               @change="localProblem.answer = String(idx + 1)"
               class="cursor-pointer rounded-full h-7 w-7 border-2 border-black-3 place-items-center text-black-2 hover:bg-black-5"
+              :invalid="false"
             /><InputText
               type="text"
               v-model="
@@ -391,9 +406,28 @@ onBeforeMount(async () => {
             />
           </div>
         </fieldset>
-        <fieldset>
+        <fieldset class="addDivider mb-4">
           <legend class="my-2">풀이</legend>
-          <div ref="explanationEditor"></div>
+          <div ref="explanationEditor" class="mb-6"></div>
+        </fieldset>
+        <fieldset class="flex flex-col gap-2 mb-4">
+          <div class="flex items-center gap-4">
+            <label for="origin_source"
+              >출처 <sup class="text-black-2">*</sup>
+            </label>
+            <InputText
+              type="text"
+              v-model="localProblem.origin_source"
+              name="origin_source"
+              class="md:h-10 flex-grow"
+              :invalid="localProblem.origin_source == ''"
+            />
+          </div>
+          <p class="flex gap-2 text-black-1 items-center text-xs">
+            <img :src="alarmPath" alt="사용자 출처 저작권 안내 문구" />문제의
+            출처를 최대한 자세하게 써주세요. 타인의 문제를 허락없이 공유하여
+            법적인 제제를 받는 경우, 풀고에서 책임지지 않습니다.
+          </p>
         </fieldset>
       </form>
     </article>
@@ -407,5 +441,11 @@ onBeforeMount(async () => {
   margin-top: 12px;
   content: "";
   display: block;
+}
+:deep(.custom-overlay) {
+  position: absolute !important;
+  top: 188px !important;
+  bottom: auto !important;
+  transform: none !important;
 }
 </style>

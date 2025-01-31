@@ -30,11 +30,9 @@ import { useAuthStore } from "@/store/authStore";
 import plus from "@/assets/icons/problem-board/plus.svg";
 import minus from "@/assets/icons/problem-board/minus.svg";
 import sharedIcon from "@/assets/icons/my-problem-sets/share.svg";
-import wrong from "@/assets/icons/problem-set-board-detail/wrong.svg";
 import statusWrong from "@/assets/icons/problem-board/status-wrong.svg";
 import statusSolved from "@/assets/icons/problem-board/status-solved.svg";
 import seeMyProblems from "@/assets/icons/my-problems/see-my-problems.svg";
-import corrected from "@/assets/icons/problem-set-board-detail/corrected.svg";
 import checkedMyProblem from "@/assets/icons/my-problems/color-my-problems.svg";
 import { useRoute } from "vue-router";
 import { useRouter } from "vue-router";
@@ -222,9 +220,7 @@ const sortedProblems = computed(() => {
         (a, b) => new Date(b.created_at) - new Date(a.created_at),
       );
     case SORT.likes:
-      return problems.sort(
-        (a, b) => (b.likes.length || 0) - (a.likes.length || 0),
-      );
+      return problems.sort((a, b) => b.likes_count - a.likes_count);
     default:
       return problems;
   }
@@ -253,7 +249,7 @@ onBeforeUnmount(() => {
     <div class="flex items-center justify-between">
       <div class="flex items-center gap-2">
         <p class="text-xl font-semibold" v-if="showCount">
-          {{ problems.length }} 문제
+          {{ problems?.length }} 문제
         </p>
         <Button
           v-if="showProblem"
@@ -309,7 +305,6 @@ onBeforeUnmount(() => {
         v-model:selection="selectedProblems"
         :value="sortedProblems"
         dataKey="id"
-        tableStyle="min-width: 50rem"
         paginator
         :rows="10"
       >
@@ -345,37 +340,22 @@ onBeforeUnmount(() => {
             </button>
           </template>
         </Column>
-        <Column field="history[0].status" header="상태" v-if="showStatus">
+        <Column field="latest_status" header="상태" v-if="showStatus">
           <template #body="slotProps">
             <div
-              v-if="slotProps.data.history?.length"
-              v-tooltip.top="messageStatus(slotProps.data.history[0].status)"
+              v-if="slotProps.data.latest_status"
+              class="w-fit"
+              v-tooltip.top="messageStatus(slotProps.data.latest_status)"
             >
               <img
-                v-if="getStatus(slotProps.data.history[0].status) !== ''"
-                :src="getStatus(slotProps.data.history[0].status)"
+                v-if="getStatus(slotProps.data.latest_status) !== ''"
+                :src="getStatus(slotProps.data.latest_status)"
                 alt="상태 아이콘"
               />
             </div>
           </template>
         </Column>
-        <Column field="history[0].status" header="상태" v-if="!showStatus">
-          <template #body="slotProps">
-            <div>
-              <img
-                v-if="slotProps.data.latest_status === 'corrected'"
-                :src="corrected"
-                alt="맞힌 문제"
-              />
-              <img
-                v-else-if="slotProps.data.latest_status === 'wrong'"
-                :src="wrong"
-                alt="틀린 문제"
-              />
-            </div>
-          </template>
-        </Column>
-        <Column field="title" header="제목">
+        <Column field="title" class="w-[45%]" header="제목">
           <template #body="slotProps">
             <div class="flex justify-between w-full">
               <RouterLink
@@ -410,7 +390,7 @@ onBeforeUnmount(() => {
           </template>
         </Column>
 
-        <Column field="category.name" header="카테고리">
+        <Column field="category_name" header="카테고리">
           <template #body="slotProps">
             {{ slotProps.data.category_name }}
           </template>

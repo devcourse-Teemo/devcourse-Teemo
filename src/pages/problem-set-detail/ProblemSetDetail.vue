@@ -228,7 +228,6 @@ onMounted(async () => {
       :showMyProblem="false"
       :showProblem="false"
       :showSharedProblem="false"
-      :showStatus="false"
     />
     <hr class="w-full mb-10 border border-[#d4d4d4]" />
     <CommentList

@@ -39,12 +39,10 @@ const onClickButton = async (type) => {
   <main
     class="bg-bg-404 bg-center bg-no-repeat bg-cover w-screen h-screen flex flex-col place-content-center place-items-center"
   >
-    <h1 class="font-laundry text-orange-1 text-[10rem] leading-none">404</h1>
-    <p class="text-black-2/50 font-laundry mt-1">
-      이런, 페이지가 꼬여버렸네요!
-    </p>
+    <h1 class="font-laundry text-orange-1 text-[12rem] leading-none">404</h1>
+    <p class="text-black-2/50 font-laundry">이런, 페이지가 꼬여버렸네요!</p>
     <button
-      class="bg-btn-orange1 bg-contain bg-center bg-no-repeat px-8 py-5 text-white font-medium mt-8 hover:scale-110"
+      class="bg-btn-orange1 bg-contain bg-center bg-no-repeat px-8 py-5 text-white font-medium mt-12 hover:scale-110"
       @click="onClickButton('HOME')"
     >
       홈으로 가기

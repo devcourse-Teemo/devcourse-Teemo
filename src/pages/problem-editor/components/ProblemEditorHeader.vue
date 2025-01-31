@@ -1,5 +1,5 @@
 <script setup>
-import { ref, reactive, onBeforeMount } from "vue";
+import { ref, reactive, onBeforeMount, watchEffect } from "vue";
 import arrowLeftPath from "@/assets/icons/problem-editor/arrow-left.svg";
 import folderPath from "@/assets/icons/problem-editor/folder.svg";
 import arrowTopPath from "@/assets/icons/problem-editor/arrow-top.svg";
@@ -51,9 +51,9 @@ const closeAllPopups = () => {
 
 //폴더 지정 함수
 const setFolder = (folder) => {
+  console.log(folder);
   selectedFolder.value = folder.title;
   emits("setProblemFolder", folder);
-  console.log(selectedFolder);
   closeAllPopups();
 };
 
@@ -70,35 +70,41 @@ const onCreateNewFolder = async ({ title, description }) => {
 
 const setFolderFromList = () => {
   if (!selectedProblemSet.value) {
-    setFolder({});
+    setFolder({ id: "", title: "문제집을 선택하세요" });
   } else setFolder(selectedProblemSet.value);
+  isFolderOpen.value = false;
 };
 
-onBeforeMount(async () => {
-  const folder = props.storedFolder || "";
-  if (folder) {
-    setFolder(folder);
-  }
-
-  // problemSet 불러오기
-  // 사용자 UID 기반 경로 설정
-  // TODO: 로그아웃 안했는데 user이 null이 됨 -> token 갱신 이슈?
-  if (!user) {
-    throw new Error("사용자 인증에 실패했습니다. 다시 로그인해주세요.");
-  }
-  const userId = user.id;
-  const userFolderData = await workbookAPI.getUid(userId);
-  console.log(userFolderData);
-  problemSets.push(...userFolderData);
-
-  const sharedFolderData = await workbookAPI.getShared(userId);
-  console.log(sharedFolderData);
-  problemSets.push(...sharedFolderData);
+watchEffect(() => {
+  // `props.storedFolder`가 존재하는 경우 설정
+  const folder = props.storedFolder || { id: "", title: "문제집을 선택하세요" };
+  setFolder(folder);
+  selectedProblemSet.value = folder;
 });
+
+const fetchProblemSets = async () => {
+  if (!user || !user.id) {
+    console.error("사용자 인증에 실패했습니다. 다시 로그인해주세요.");
+    return;
+  }
+
+  try {
+    const userId = user.id;
+    const userFolderData = await workbookAPI.getUid(userId);
+    problemSets.push(...userFolderData);
+
+    const sharedFolderData = await workbookAPI.getShared(userId);
+    problemSets.push(...sharedFolderData);
+  } catch (error) {
+    console.error("폴더 데이터를 가져오는 중 오류 발생:", error);
+  }
+};
+
+fetchProblemSets();
 </script>
 <template>
   <header
-    class="top-0 left-0 p-2.5 border-black-5 border flex items-center justify-between"
+    class="top-0 left-0 p-2.5 border-b border-black-5 flex items-center justify-between"
   >
     <Button @click="emits('onGoingBack')" style="padding: 8px 8px">
       <img
@@ -108,13 +114,20 @@ onBeforeMount(async () => {
       />
     </Button>
     <div
-      class="overlay flex items-center cursor-pointer relative"
+      class="overlay flex items-center cursor-pointer relative rounded"
       @click="onClickFolder"
     >
       <p class="p-1.5 bg-orange-1 rounded mr-4">
         <img :src="folderPath" alt="폴더" class="align-middle" />
       </p>
-      <span class="text-xl font-medium mr-4">{{ selectedFolder }}</span>
+      <span
+        class="text-xl font-medium mr-4"
+        :class="{
+          'text-red-1':
+            selectedFolder === '문제집을 선택하세요' && !selectedProblemSet?.id,
+        }"
+        >{{ selectedFolder }}</span
+      >
       <img
         :src="arrowTopPath"
         :alt="isFolderOpen ? '폴더 토글 닫힘' : '폴더 토글 열림'"
@@ -124,11 +137,7 @@ onBeforeMount(async () => {
         ]"
       />
       <!-- 팝업 -->
-      <div
-        v-if="isFolderOpen"
-        class="absolute top-full left-0 mt-3"
-        @click.stop
-      >
+      <div v-if="isFolderOpen" class="absolute top-full mt-3" @click.stop>
         <Listbox
           v-model="selectedProblemSet"
           :options="problemSets"
@@ -158,7 +167,7 @@ onBeforeMount(async () => {
 
       <div
         v-if="isCreateNewFolder && isFolderOpen"
-        class="w-64 absolute top-full mt-3 left-[240px]"
+        class="w-64 absolute top-full mt-3 left-[240px] ml-5"
         @click.stop
       >
         <!-- TODO: 무조건 이름 입력해야 클릭 가능 -->

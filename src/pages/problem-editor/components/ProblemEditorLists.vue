@@ -7,9 +7,12 @@ const props = defineProps({
     type: Array,
     default: () => [],
   },
+  targetProblem: {
+    type: Number,
+  },
 });
 const emits = defineEmits(["addProblem", "onClickProblemList"]);
-const targetProblemIdx = ref(-1);
+const targetProblemIdx = ref(props.targetProblem);
 const onClickProblem = (idx) => {
   if (targetProblemIdx) {
     targetProblemIdx.value = idx;
@@ -40,11 +43,14 @@ const onClickProblem = (idx) => {
       :key="idx"
       @click="onClickProblem(idx)"
       :class="[
-        'border border-black-5 flex flex-col gap-3 p-2 rounded-lg font-medium cursor-pointer hover:scale-[102%]',
+        'flex flex-col gap-3 p-2 rounded-lg font-medium cursor-pointer hover:scale-[102%]',
         targetProblemIdx == idx ? 'bg-black-5' : 'bg-white',
+        !problem.isValid && problem.visited
+          ? 'border border-red-1'
+          : 'border border-black-5',
       ]"
     >
-      <p class="text-sm text-black-1">
+      <p class="text-sm text-black-1 truncate">
         <span class="mr-1">{{ idx + 1 }}.</span>
         <span>{{ problem.title }}</span>
       </p>

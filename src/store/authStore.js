@@ -89,7 +89,6 @@ export const useAuthStore = defineStore(
     return {
       user,
       isLoading,
-
       isAuthenticated,
 
       initializeAuth,

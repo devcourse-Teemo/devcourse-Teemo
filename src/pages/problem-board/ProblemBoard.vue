@@ -2,7 +2,7 @@
 import { problemAPI } from "@/api/problem";
 import ProblemTable from "@/components/layout/ProblemTable.vue";
 import Search from "@/components/layout/Search.vue";
-import { ref, watch, onBeforeMount } from "vue";
+import { ref, onMounted } from "vue";
 import { formatDate } from "@/utils/formatDate";
 import { useAuthStore } from "@/store/authStore";
 import { storeToRefs } from "pinia";
@@ -41,7 +41,7 @@ const search = async (
   });
 };
 
-onBeforeMount(() => {
+onMounted(() => {
   search(keyword, startDate, endDate, sort, status);
 });
 </script>
