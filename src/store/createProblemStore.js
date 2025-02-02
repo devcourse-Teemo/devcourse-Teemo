@@ -36,26 +36,14 @@ export const useCreateProblemStore = defineStore("createProblem", {
       this.createdProblems.problemLists.push(newItem);
       this.setTargetProblem(this.createdProblems.problemLists.length - 1);
     },
-    // setTargetProblem(itemIdx) {
-    //   this.targetProblem.idx = itemIdx;
-    //   if (itemIdx === -1) {
-    //     this.targetProblem.content = {};
-    //     return;
-    //   }
-    //   this.targetProblem.content = this.createdProblems.problemLists[itemIdx];
-    // },
     setTargetProblem(itemIdx) {
       this.targetProblem.idx = itemIdx;
       if (itemIdx === -1) {
         this.targetProblem.content = {};
         return;
       }
-      Object.assign(
-        this.targetProblem.content,
-        this.createdProblems.problemLists[itemIdx],
-      );
+      this.targetProblem.content = this.createdProblems.problemLists[itemIdx];
     },
-
     deleteProblem() {
       if (this.targetProblem.idx !== -1) {
         this.createdProblems.problemLists.splice(this.targetProblem.idx, 1);

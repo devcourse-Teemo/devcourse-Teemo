@@ -43,22 +43,22 @@ const isInvitedExamsExpanded = ref(false);
 
 // Computed - Visible Items
 const visibleOngoingExams = computed(() =>
-  ongoingExams.value.slice(0, ongoingExamsDisplayCount.value),
+  ongoingExams.value.slice(0, ongoingExamsDisplayCount.value)
 );
 
 const visibleMyExams = computed(() =>
-  myExams.value.slice(0, myExamsDisplayCount.value),
+  myExams.value.slice(0, myExamsDisplayCount.value)
 );
 
 const visiblePendingInvites = computed(() =>
-  invitedExams.value.slice(0, invitedExamsDisplayCount.value),
+  invitedExams.value.slice(0, invitedExamsDisplayCount.value)
 );
 
 // Computed - Show More Button
 const showMoreButtons = computed(() => ({
   ongoing: ongoingExams.value.length > ITEMS_PER_PAGE,
   myExams: myExams.value.length > ITEMS_PER_PAGE,
-  invited: invitedExams.value.length > ITEMS_PER_PAGE,
+  invited: invitedExams.value.length > ITEMS_PER_PAGE
 }));
 
 // Methods - Toggle Display
@@ -90,9 +90,7 @@ const fetchExams = async () => {
   const now = new Date();
   try {
     // 1. 내가 만든 시험장 목록
-    const testCenterResponse = await testCenterAPI.getAllFields(
-      authStore.user.id,
-    );
+    const testCenterResponse = await testCenterAPI.getAllFields(authStore.user.id);
 
     // 2. 초대받은 시험장 목록
     const inviteResponse = await inviteAPI.getAll(authStore.user.id);
@@ -132,7 +130,6 @@ const fetchExams = async () => {
       const endDate = new Date(invite.test_center.end_date);
       return !invite.participate && endDate >= now;  // 종료일이 현재보다 이후인 시험만 필터링
     }) || [];
-    
   } catch (error) {
     console.error("시험 데이터 로딩 실패:", error);
   }
