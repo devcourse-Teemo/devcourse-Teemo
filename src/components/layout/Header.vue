@@ -9,6 +9,7 @@ import { useAuthStore } from "@/store/authStore";
 import { storeToRefs } from "pinia";
 import { RouterLink } from "vue-router";
 import { useRoute } from "vue-router";
+import { supabase } from "@/api";
 
 const pointPath = new URL("@/assets/icons/point.svg", import.meta.url).href;
 
@@ -59,17 +60,23 @@ const openMenu = (event) => {
   menu.value.toggle(event); // 클릭 위치에서 메뉴 표시
 };
 
+supabase
+  .channel("point-channel")
+  .on(
+    "postgres_changes",
+    { event: "INSERT", schema: "public", table: "point" },
+    ({ new: newPoint }) => {
+      if (newPoint.uid === user.value.id) {
+        userInfo.value.total_points += newPoint.change_value;
+      }
+    },
+  )
+  .subscribe();
+
 onBeforeMount(async () => {
   await authStore.initializeAuth();
+  userInfo.value = await userAPI.getOne(user.value.id);
 });
-
-watch(
-  () => route.path,
-  async () => {
-    userInfo.value = await userAPI.getOne(user.value.id);
-  },
-  { immediate: true },
-);
 </script>
 
 <template>
