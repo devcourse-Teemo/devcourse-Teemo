@@ -54,7 +54,7 @@ const reversedProblemSets = computed(() => [...problemSets.value].reverse());
 const resolver = ({ values }) => {
   const errors = { title: [] };
 
-  if (!values.title) {
+  if (!values.title.trim()) {
     errors.title.push({ type: "required", message: "제목은 필수입니다." });
   }
 
@@ -93,16 +93,6 @@ const closeAllPopups = () => {
 
 const addProblemSet = async ({ valid }) => {
   if (!valid) return;
-
-  if (!title.value.trim()) {
-    toast.add({
-      severity: "error",
-      summary: "문제집 생성 실패",
-      detail: "제목이 없는 문제집은 생성할 수 없습니다.",
-      life: 3000,
-    });
-    return;
-  }
 
   const problemSet = await workbookAPI.add(
     title.value.trim(),
