@@ -138,6 +138,12 @@ export const useExamResultStore = defineStore("examResult", {
         // 문제 데이터 정렬 및 추가 필드 생성
         //problem_id 순서대로 정렬
 
+        // 정렬후에 console.log 찍어보기
+        // 진짜로 problems 순서대로 나오는지
+        console.log(
+          "정렬 전 문제 ID 리스트:",
+          fetchedProblems.map((p) => p.id),
+        );
         this.problems = fetchedProblems
           .sort((a, b) => a.id - b.id)
           .map((problem, index) => ({
@@ -147,14 +153,11 @@ export const useExamResultStore = defineStore("examResult", {
           }));
         console.log("문제체크", this.problems);
 
-        // 문제 데이터 정렬 및 추가 필드 생성
-        // this.problems = [...fetchedProblems]
-        //   .reverse()
-        //   .map((problem, index) => ({
-        //     ...problem,
-        //     number: index + 1, // 문제 번호 추가
-        //     flagged: false, // 플래그 상태 초기화
-        //   }));
+        console.log(
+          "정렬 후 문제 ID 리스트:",
+          this.problems.map((p) => p.id),
+        );
+        console.log("문제 리스트 업데이트 완료:", this.problems);
 
         // 첫 번째 문제 설정
         this.currentProblem =
