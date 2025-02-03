@@ -88,7 +88,7 @@ watch(
           <p class="text-lg">전체 문제</p>
           <span class="text-5xl">{{ totalCount }}</span>
         </div>
-        <div class="flex items-center pt-8 pl-12 flex-shrink-0">
+        <div class="flex items-center pt-8 pl-12 flex-shrink-0 translate-x-7">
           <img :src="allProblem" alt="전체문제" />
         </div>
       </div>
@@ -100,7 +100,7 @@ watch(
           <p class="text-lg">맞힌 문제</p>
           <span class="text-5xl">{{ correctCount }}</span>
         </div>
-        <div class="flex items-center pt-8 ml-1 flex-shrink-0">
+        <div class="flex items-center pt-8 ml-1 flex-shrink-0 translate-x-7">
           <img :src="correctedProblem" alt="맞힌 문제" />
         </div>
       </div>
@@ -111,7 +111,7 @@ watch(
           <p class="text-lg">평균 정답 갯수</p>
           <span class="text-5xl">{{ averageCount }}</span>
         </div>
-        <div class="flex items-center pt-8 flex-shrink-0">
+        <div class="flex items-center pt-8 flex-shrink-0 translate-x-7">
           <img :src="average" alt="평균정답갯수" />
         </div>
       </div>
