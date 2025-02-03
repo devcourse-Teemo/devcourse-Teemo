@@ -23,11 +23,12 @@ const getUid = async (uid) => {
 
 //내가 고른 선택지
 
-const getTestCenterId = async (testResultId) => {
+const getTestCenterId = async (testResultId, userId) => {
   const query = supabase
     .from("test_result")
-    .select("test_center_id, created_at")
+    .select("test_center_id")
     .eq("id", testResultId)
+    .eq("uid", userId)
     .single();
 
   const { data, error } = await query;

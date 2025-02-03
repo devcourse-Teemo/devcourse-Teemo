@@ -51,6 +51,7 @@ const selectedStatus = computed(() => {
 // 초기 데이터 로드
 const loadInitialData = async () => {
   if (isFetchingProblems.value) return;
+
   try {
     if (!userId.value || !testResultId.value) {
       console.warn("유효하지 않은 userId 또는 testResultId");
@@ -169,12 +170,19 @@ watch(
 
     <template v-else>
       <div v-if="examResultStore.currentProblem">
-        <!-- 지역 변수 캐싱 -->
         <div v-if="(currentProblem = examResultStore.currentProblem)">
           <div
             class="flex items-center justify-between gap-4 pb-4 mb-4 border-b border-gray-300"
           >
-            <h2 class="text-xl font-bold">문제 {{ currentProblem.number }}</h2>
+            <div class="flex items-center justify-between gap-4">
+              <span class="text-xl font-bold"
+                >문제 {{ currentProblem.number }}</span
+              >
+              <span class="text-xl font-bold text-gray-900">
+                {{ examResultStore.currentProblem.title }}
+              </span>
+            </div>
+
             <Button
               :label="'다시 풀 문제'"
               icon="pi pi-flag"
@@ -200,6 +208,7 @@ watch(
               class="max-w-full h-auto rounded-lg shadow-md"
             />
           </div>
+
           <div
             v-if="currentProblem.problem_type === 'multiple_choice'"
             class="space-y-4"
