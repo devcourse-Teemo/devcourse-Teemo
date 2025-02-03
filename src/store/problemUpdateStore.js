@@ -23,7 +23,6 @@ const FIELD_NAMES = {
   title: "제목",
   question: "문제 내용",
   answer: "정답",
-  explanation: "해설",
   origin_source: "출처",
   category: "카테고리",
 };
@@ -108,7 +107,6 @@ export const useProblemUpdateStore = defineStore("problemUpdate", () => {
       "title",
       "question",
       "answer",
-      "explanation",
       "origin_source",
       "category",
     ];
