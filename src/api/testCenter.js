@@ -118,8 +118,9 @@ const getAllByTestCenterId = async (testCenterId) => {
       .single();
 
     const problems = [...data.workbook.workbook_problem].sort(
-      (a, b) => a.id - b.id,
+      (a, b) => a.problem.id - b.problem.id,
     );
+
     delete data.workbook.workbook_problem;
 
     if (error) throw error;
