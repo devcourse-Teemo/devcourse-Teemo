@@ -10,6 +10,16 @@ const getAll = async () => {
   }
 };
 
+const getProblemInfo = async () => {
+  try {
+    const { data, error } = await supabase.rpc("problem_info");
+    if (error) throw error;
+    return data;
+  } catch (error) {
+    console.error(error);
+  }
+};
+
 /**
  * @description 게시판에서 사용되는 API
  * @param {*} userId
@@ -480,6 +490,7 @@ const getRandom = async () => {
 };
 
 export const problemAPI = {
+  getProblemInfo,
   getAll,
   getAllShared,
   getAllByUserId,
