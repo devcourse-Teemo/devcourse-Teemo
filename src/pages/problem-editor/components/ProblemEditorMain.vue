@@ -14,6 +14,7 @@ import { Button, MultiSelect, InputText, SelectButton } from "primevue";
 
 import Editor from "@toast-ui/editor";
 import "@toast-ui/editor/dist/toastui-editor.css";
+import { useToast } from "primevue/usetoast";
 import { storageAPI } from "@/api/storage";
 import { categoryAPI } from "@/api/category";
 import { useCreateProblemStore } from "@/store/createProblemStore";
@@ -21,7 +22,7 @@ import { storeToRefs } from "pinia";
 
 const createProblemStore = useCreateProblemStore();
 const { createdProblems, targetProblem } = storeToRefs(createProblemStore);
-
+const toast = useToast();
 const emits = defineEmits(["deleteProblem"]);
 
 const setType = (type) => {
@@ -51,9 +52,7 @@ let explanationEditorInstance = null;
 
 // 카테고리 생성용
 const doesCategoryExist = computed(() => {
-  return JSON.stringify(category).indexOf(`${filteredCategory.value}`) === -1
-    ? false
-    : true;
+  return category.some((cat) => cat.title == filteredCategory.value);
 });
 const filteredCategory = ref("");
 const onFilterCategory = (event) => {
@@ -62,12 +61,17 @@ const onFilterCategory = (event) => {
 
 const createCategory = async () => {
   if (!filteredCategory.value.trim()) {
-    console.error("Category name cannot be empty");
+    toast.add({
+      severity: "error",
+      summary: "카테고리 생성 실패",
+      detail: "카테고리가 비어있어 생성이 불가 합니다.",
+      life: 4000,
+    });
     return;
   }
 
   const newCategoryData = await categoryAPI.createCategory({
-    name: filteredCategory.value.trim(),
+    name: filteredCategory.value.trim().substring(0, 15),
   });
 
   category.push(...newCategoryData);
@@ -156,7 +160,7 @@ watchEffect(() => {
       events: {
         change: () => {
           const value = explanationEditorInstance.getMarkdown();
-          localProblem.explanation = value; // explanation만 업데이트
+          localProblem.explanation = value;
         },
       },
       hooks: {
@@ -198,16 +202,21 @@ onBeforeMount(async () => {
 
 const updateValidity = () => {
   localProblem.validity.category = localProblem.category?.length > 0;
-  localProblem.validity.title = localProblem.title?.length > 0;
-  localProblem.validity.question = localProblem.question?.length > 0;
+  localProblem.validity.title = localProblem.title?.trim().length > 0;
+  localProblem.validity.question = localProblem.question?.trim().length > 0;
   localProblem.validity.answer = localProblem.answer?.length > 0;
-  localProblem.validity.origin_source = localProblem.origin_source?.length > 0;
+  localProblem.validity.origin_source =
+    localProblem.origin_source?.trim().length > 0;
 
   if (localProblem.type === "4지선다") {
-    localProblem.validity.option_one = localProblem.option_one?.length > 0;
-    localProblem.validity.option_two = localProblem.option_two?.length > 0;
-    localProblem.validity.option_three = localProblem.option_three?.length > 0;
-    localProblem.validity.option_four = localProblem.option_four?.length > 0;
+    localProblem.validity.option_one =
+      localProblem.option_one?.trim().length > 0;
+    localProblem.validity.option_two =
+      localProblem.option_two?.trim().length > 0;
+    localProblem.validity.option_three =
+      localProblem.option_three?.trim().length > 0;
+    localProblem.validity.option_four =
+      localProblem.option_four?.trim().length > 0;
   } else {
     delete localProblem.validity.option_one;
     delete localProblem.validity.option_two;
@@ -309,13 +318,20 @@ watch(
             v-model="localProblem.title"
             name="problem"
             class="md:h-10 w-full"
-            placeholder="문제의 제목을 작성해 주세요."
-            :invalid="localProblem.title == ''"
+            placeholder="문제의 제목을 작성해 주세요.(20자)"
+            :invalid="localProblem.title?.trim() == ''"
             @change="
               (e) => createProblemStore.updateListItem('TITLE', e.target.value)
             "
+            maxlength="20"
           />
-          <div ref="questionEditor"></div>
+          <div
+            ref="questionEditor"
+            :class="{
+              'border border-red-1 rounded':
+                localProblem.question?.trim() === '',
+            }"
+          ></div>
           <p>답 <sup class="text-black-2">*</sup></p>
           <div
             v-if="localProblem.type == '4지선다'"
@@ -349,6 +365,19 @@ watch(
               name="option"
               class="md:h-9 w-full"
               placeholder="선택지 내용"
+              :invalid="
+                localProblem[
+                  `option_${
+                    idx === 0
+                      ? 'one'
+                      : idx === 1
+                      ? 'two'
+                      : idx === 2
+                      ? 'three'
+                      : 'four'
+                  }`
+                ]?.trim() === ''
+              "
             />
           </div>
           <div v-else-if="localProblem.type == 'O/X'">
@@ -373,7 +402,7 @@ watch(
               v-model="localProblem.origin_source"
               name="origin_source"
               class="md:h-10 flex-grow"
-              :invalid="localProblem.origin_source == ''"
+              :invalid="localProblem.origin_source?.trim() == ''"
             />
           </div>
           <p class="flex gap-2 text-black-1 items-center text-xs">
