@@ -12,7 +12,11 @@ const props = defineProps({
   },
   workbookId: {
     type: [String, Number],
-    required: true,
+    default: 0,
+  },
+  problemId: {
+    type: [String, Number],
+    default: 0,
   },
   currentPage: {
     type: Number,
@@ -50,18 +54,34 @@ const handleKeyPress = async (event) => {
 };
 const handleSubmitComment = async () => {
   if (!text.value.trim()) return;
-  await commentAPI.createComment({
-    workbook_id: props.workbookId,
-    comment: text.value,
-    uid: userId.value,
-  });
+  if (props.problemId === 0) {
+    await commentAPI.createComment({
+      workbook_id: props.workbookId,
+      comment: text.value,
+      uid: userId.value,
+    });
 
-  toast.add({
-    severity: "info",
-    summary: "댓글 작성 포인트 지급",
-    detail: "댓글 작성으로 2포인트를 획득했습니다.",
-    life: 3000,
-  });
+    toast.add({
+      severity: "info",
+      summary: "댓글 작성 포인트 지급",
+      detail: "댓글 작성으로 2포인트를 획득했습니다.",
+      life: 3000,
+    });
+  }
+  if (props.workbookId === 0) {
+    await commentAPI.createComment({
+      problem_id: props.problemId,
+      comment: text.value,
+      uid: userId.value,
+    });
+
+    toast.add({
+      severity: "info",
+      summary: "댓글 작성 포인트 지급",
+      detail: "댓글 작성으로 2포인트를 획득했습니다.",
+      life: 3000,
+    });
+  }
 
   text.value = "";
 };
@@ -73,8 +93,10 @@ onMounted(async () => {
 </script>
 <template>
   <div class="flex flex-col w-full">
-    <h3 class="text-2xl text-gray-700 mb-6">댓글</h3>
-
+    <h3 class="mb-6 text-2xl text-gray-700">댓글 {{ totalRecords }}</h3>
+    <div v-if="!comments?.length" class="py-4 mb-8 text-center text-gray-500">
+      첫 번째 댓글을 작성해보세요.
+    </div>
     <div class="w-full">
       <Comment
         v-for="comment in comments"
@@ -88,7 +110,7 @@ onMounted(async () => {
       v-model="text"
       @keypress="handleKeyPress"
       class="w-full h-[133px] resize-none pt-3 px-6 rounded-lg pretend text-[14px] bg-[#f0f0f0] border-[#d4d4d4]"
-      placeholder="문제집에 대해 어떻게 생각하시나요?"
+      placeholder="해당 게시물에 대해 어떻게 생각하시나요?"
     ></textarea>
   </div>
   <Paginator

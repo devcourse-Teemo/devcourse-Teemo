@@ -128,7 +128,7 @@ const handleFilterButtonClick = (filterType) => {
 const problemAdd = inject("problemAdd");
 const addedProblemDelete = inject("addedProblemDelete");
 const problemDelete = inject("problemDelete");
-const myProblemsDataUpdate = inject("myProblemsDataUpdate");
+const fetchProblems = inject("fetchProblems");
 
 const ShowProblemSetPopup = () => {
   showProblemSet.value = true;
@@ -170,7 +170,7 @@ const deleteProblem = (problem_id) => {
     accept: async () => {
       await workbookAPI.removeProblem(props.workbookId, problem_id);
       problemDelete();
-      myProblemsDataUpdate();
+      fetchProblems();
     },
     reject: () => {},
   });
@@ -395,7 +395,7 @@ onBeforeMount(async () => {
         </Column>
         <Column field="title" class="w-[45%]" header="제목" v-if="!newTab">
           <template #body="slotProps">
-            <div class="flex justify-between gap-6 w-full">
+            <div class="flex justify-between w-full gap-6">
               <RouterLink
                 :to="`${
                   slotProps.data.id === user?.id

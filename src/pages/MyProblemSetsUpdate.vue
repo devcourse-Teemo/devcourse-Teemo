@@ -1,5 +1,5 @@
 <script setup>
-import { ref, onMounted, provide } from "vue";
+import { ref, onMounted, provide, watch, nextTick } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { Dialog, ToggleSwitch, useConfirm, useToast } from "primevue";
 
@@ -96,15 +96,6 @@ const problemDelete = async () => {
 provide("problemDelete", problemDelete);
 
 const problemSetUpdate = async () => {
-  if (!title.value.trim() && !description.value.trim()) {
-    toast.add({
-      severity: "error",
-      summary: "문제집 수정 실패",
-      detail: "제목과 설명을 입력해주세요.",
-      life: 3000,
-    });
-    return;
-  }
   if (!title.value.trim()) {
     toast.add({
       severity: "error",
@@ -114,15 +105,7 @@ const problemSetUpdate = async () => {
     });
     return;
   }
-  if (!description.value.trim()) {
-    toast.add({
-      severity: "error",
-      summary: "문제집 수정 실패",
-      detail: "설명을 입력해주세요.",
-      life: 3000,
-    });
-    return;
-  }
+
   await workbookAPI.update(
     {
       title: title.value,
@@ -154,22 +137,42 @@ const workbookProblemDataUpdate = async () => {
   problems.value = workbookProblemData;
 };
 
-const myProblemsDataUpdate = async () => {
-  const myProblemsData = await problemAPI.getAll();
+const limitTitle = (event) => {
+  const titleValue = event.target.value;
+  const trimmedTitle = [...titleValue].slice(0, 20).join("");
 
-  const filteredProblems = myProblemsData.filter(
-    (problem) =>
-      !problems.value.some(
-        (workbookProblem) => workbookProblem.id === problem.id,
-      ),
-  );
-
-  myProblems.value = filteredProblems;
+  if (titleValue.length > 20) {
+    title.value = trimmedTitle;
+    toast.add({
+      severity: "error",
+      summary: "제목 수정 에러",
+      detail: "제목은 20자를 초과하실 수 없습니다.",
+      life: 3000,
+    });
+  } else {
+    title.value = titleValue;
+  }
 };
-provide("myProblemsDataUpdate", myProblemsDataUpdate);
+
+const limitDescription = (event) => {
+  const descriptionValue = event.target.value;
+  const trimmedDescription = [...descriptionValue].slice(0, 200).join("");
+
+  if (descriptionValue.length > 200) {
+    description.value = trimmedDescription;
+    toast.add({
+      severity: "error",
+      summary: "설명 수정 에러",
+      detail: "설명은 200자를 초과하실 수 없습니다.",
+      life: 3000,
+    });
+  } else {
+    description.value = descriptionValue;
+  }
+};
 
 const search = async (keyword, startDate, endDate, sort, status) => {
-  const newProblems = await problemAPI.search(
+  myProblems.value = await problemAPI.search(
     user.value.id,
     keyword,
     startDate ? new Date(startDate).toISOString() : null,
@@ -177,25 +180,41 @@ const search = async (keyword, startDate, endDate, sort, status) => {
     status,
   );
 
-  myProblems.value = newProblems.filter(
+  const newQuery = {
+    ...route.query,
+    keyword,
+    startDate: formatDate(startDate),
+    endDate: formatDate(endDate),
+    status,
+    sort,
+    page: 1,
+  };
+
+  if (JSON.stringify(route.query) !== JSON.stringify(newQuery)) {
+    router.replace({ query: newQuery });
+  }
+};
+
+const fetchProblems = async () => {
+  const { keyword, startDate, endDate, status } = route.query;
+  const fetchedProblems = await problemAPI.search(
+    user.value.id,
+    keyword,
+    startDate ? new Date(startDate).toISOString() : null,
+    endDate ? new Date(endDate).toISOString() : null,
+    status,
+  );
+
+  await nextTick(); // Vue가 반응형 데이터를 업데이트하고 난 후 렌더링하도록 설정
+  myProblems.value = fetchedProblems.filter(
     (problem) =>
       !problems.value.some(
         (workbookProblem) => workbookProblem.id === problem.id,
       ),
   );
-
-  router.replace({
-    query: {
-      ...route.query,
-      keyword,
-      startDate: formatDate(startDate),
-      endDate: formatDate(endDate),
-      status,
-      sort,
-      page: 1,
-    },
-  });
 };
+
+provide("fetchProblems", fetchProblems);
 
 onMounted(async () => {
   const workbookData = await workbookAPI.getOne(route.params.problemSetId);
@@ -212,17 +231,18 @@ onMounted(async () => {
   const userInfo = await authAPI.getCurrentUser();
   uid.value = userInfo.id;
 
-  const myProblemsData = await problemAPI.getAll();
-
-  const filteredProblems = myProblemsData.filter(
-    (problem) =>
-      !workbookProblemData.some(
-        (workbookProblem) => workbookProblem.id === problem.id,
-      ),
-  );
-
-  myProblems.value = filteredProblems;
+  await fetchProblems();
 });
+
+watch(
+  () => route.query,
+  async (newQuery, oldQuery) => {
+    if (JSON.stringify(newQuery) !== JSON.stringify(oldQuery)) {
+      await fetchProblems();
+    }
+  },
+  { deep: true },
+);
 </script>
 <template>
   <div class="flex mb-[82px] h-[206px]">
@@ -232,16 +252,18 @@ onMounted(async () => {
 
     <div class="flex flex-col justify-between mr-[34px]">
       <div class="flex flex-col justify-between h-[77px]">
-        <div>
+        <div class="w-[680px]">
           <textarea
+            @input="limitTitle"
             v-model="title"
-            class="w-[572px] h-[62px] resize-none border rounded-lg border-black-4 px-4 text-[36px] font-sans leading-[150%]"
+            class="w-full h-[62px] resize-none border rounded-lg border-black-4 px-4 text-[36px] font-sans leading-[150%]"
           ></textarea>
         </div>
         <div>
           <textarea
+            @input="limitDescription"
             v-model="description"
-            class="resize-none w-[572px] h-[80px] border rounded-lg border-black-4 px-4 py-2 text-[15px]"
+            class="resize-none w-full h-[80px] border rounded-lg border-black-4 px-4 py-2 text-[15px]"
           ></textarea>
         </div>
         <div class="mt-[10px] flex">
@@ -294,7 +316,7 @@ onMounted(async () => {
   >
     <div class="w-[1100px] px-[82px]">
       <div class="text-[36px] h-[54px] font-bold my-8">문제 추가하기</div>
-      <Search @search="search" :show-status="true" class="my-8" />
+      <Search :show-status="true" @search="search" />
       <ProblemTable
         :problems="myProblems"
         :showCheckbox="false"
