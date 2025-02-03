@@ -25,21 +25,28 @@ const FIELD_NAMES = {
   answer: "정답",
   explanation: "해설",
   origin_source: "출처",
-  category: "카테고리"
+  category: "카테고리",
 };
 
 const validateField = (field, value) => {
+  if (field === "category") {
+    return {
+      isValid: value !== null && value !== undefined,
+      message: "카테고리를 선택해주세요",
+    };
+  }
+
   if (typeof value === "string") {
     if (!value || value.trim() === "") {
       return {
         isValid: false,
-        message: `${FIELD_NAMES[field]}을(를) 입력해주세요.`
+        message: `${FIELD_NAMES[field]}을(를) 입력해주세요.`,
       };
     }
   } else if (!value) {
     return {
       isValid: false,
-      message: `${FIELD_NAMES[field]}을(를) 입력해주세요.`
+      message: `${FIELD_NAMES[field]}을(를) 입력해주세요.`,
     };
   }
 
@@ -85,16 +92,26 @@ export const useProblemUpdateStore = defineStore("problemUpdate", () => {
 
   function updateField(field, value) {
     if (field in editedProblem.value) {
-      editedProblem.value[field] = value;
+      if (field === "category") {
+        editedProblem.value[field] = value > 0 ? value : null;
+      } else {
+        editedProblem.value[field] = value;
+      }
       return true;
-    } else {
-      console.warn(`Unknown field: ${field}`);
-      return false;
     }
+    console.warn(`Unknown field: ${field}`);
+    return false;
   }
 
   function validateRequiredFields() {
-    const requiredFields = ["title", "question", "answer", "explanation", "origin_source", "category"];
+    const requiredFields = [
+      "title",
+      "question",
+      "answer",
+      "explanation",
+      "origin_source",
+      "category",
+    ];
     const missingFields = [];
 
     for (const field of requiredFields) {
