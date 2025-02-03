@@ -12,11 +12,13 @@ import { useAuthStore } from "@/store/authStore";
 import { useExamResultStore } from "@/store/ExamResultStore";
 import { useRoute } from "vue-router";
 import { testResultAPI } from "@/api/testResult";
+import { supabase } from "@/api";
 
 const authStore = useAuthStore();
 const examResultStore = useExamResultStore();
 const route = useRoute();
 const isLoading = ref(false);
+const testCenterId = ref(null);
 const { initializeExamData, fetchProblems, getScoresByTestCenter } =
   examResultStore;
 
@@ -54,9 +56,9 @@ const initializeData = async () => {
       fetchProblems(testResultId),
     ]);
 
-    const testCenterId = await testResultAPI.fetchTestCenterId(testResultId);
-    if (testCenterId) {
-      await getScoresByTestCenter(testCenterId);
+    testCenterId.value = await testResultAPI.fetchTestCenterId(testResultId);
+    if (testCenterId.value) {
+      await getScoresByTestCenter(testCenterId.value);
     }
   } catch (err) {
     console.error("초기화 실패, catchError :", err);
@@ -76,6 +78,19 @@ watch(
   },
   { immediate: true },
 );
+
+supabase
+  .channel("exam-channel")
+  .on(
+    "postgres_changes",
+    { event: "INSERT", schema: "public", table: "test_result" },
+    async ({ new: newExamResult }) => {
+      if (newExamResult.test_center_id === testCenterId.value) {
+        await initializeData();
+      }
+    },
+  )
+  .subscribe();
 </script>
 
 <template>
