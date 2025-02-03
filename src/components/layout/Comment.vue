@@ -1,11 +1,12 @@
 <script setup>
+import { RouterLink } from "vue-router";
 import { ref, onMounted, nextTick } from "vue";
+import { useConfirm, useToast } from "primevue";
 
+import { supabase } from "@/api";
 import { authAPI } from "@/api/auth";
 import { commentAPI } from "@/api/comment";
 import { formatDateForComment } from "@/utils/formatDateForComment";
-import { RouterLink } from "vue-router";
-import { supabase } from "@/api";
 
 const { comment } = defineProps({
   comment: {
@@ -14,6 +15,8 @@ const { comment } = defineProps({
   },
 });
 
+const toast = useToast();
+const confirm = useConfirm();
 const emit = defineEmits(["comment-change"]);
 
 const text = ref(null);
@@ -28,12 +31,22 @@ const maxLength = 500; // 최대 글자 수
 
 const commentUpdate = async () => {
   isReadOnly.value = !isReadOnly.value;
+
   if (isReadOnly.value) {
+    if (comment.comment === text.value) {
+      return;
+    }
     await commentAPI.updateComment(comment.id, {
       comment: text.value,
       updated_at: new Date().toISOString(),
     });
     emit("comment-change");
+    toast.add({
+      severity: "success",
+      summary: "댓글 수정",
+      detail: "댓글이 수정 되었습니다.",
+      life: 3000,
+    });
   }
 
   // 편집 모드가 활성화될 때 높이 조절
@@ -42,12 +55,25 @@ const commentUpdate = async () => {
 };
 
 const commentDelete = async () => {
-  const realDelete = confirm("정말 삭제하시겠습니까?");
-  if (realDelete) {
-    isVisible.value = false;
-    await commentAPI.deleteComment(comment.id);
-    emit("comment-change");
-  }
+  console.log(comment.id);
+
+  confirm.require({
+    group: "delete",
+    header: "해당 댓글을 제거 하시겠습니까?",
+    message: "댓글을 제거하시려면 '제거' 버튼을 클릭하세요",
+    accept: async () => {
+      isVisible.value = false;
+      await commentAPI.deleteComment(comment.id);
+      emit("comment-change");
+      toast.add({
+        severity: "success",
+        summary: "댓글 삭제",
+        detail: "댓글이 삭제 되었습니다.",
+        life: 3000,
+      });
+    },
+    reject: () => {},
+  });
 };
 
 const getUserProfile = async (uid) => {
@@ -73,9 +99,7 @@ const adjustTextareaHeight = () => {
   }
 };
 
-// 입력 이벤트 처리 함수 (글자 수 제한)
-const handleInput = () => {
-  // 입력된 글자 수 체크
+const handleInput = async () => {
   if (text.value.length > maxLength) {
     text.value = text.value.slice(0, maxLength); // 500자 초과 시 자른다
   }
@@ -105,14 +129,14 @@ onMounted(async () => {
         <RouterLink
           :to="{ name: 'UserProfile', params: { userId: comment.uid } }"
           aria-label="유저 프로필"
-          class="flex items-center gap-2 flex-grow"
+          class="flex items-center flex-grow gap-2"
         >
           <img
             :src="avatar_url"
             alt="사용자 프로필 사진"
             class="rounded-full w-7 h-7"
           />
-          <div class="text-[16px] font-bold">{{ comment.user_name }}</div>
+          <div class="text-[16px] font-bold">{{ comment.name }}</div>
         </RouterLink>
 
         <div class="text-[12px] text-[#b1b1b1] ml-[5px] mt-[1px]">
@@ -123,16 +147,16 @@ onMounted(async () => {
       <div class="flex w-[72px] justify-between" v-if="userId === commentUid">
         <button
           @click="commentUpdate"
-          class="w-8 h-8 rounded-full hover:bg-gray-200 transition flex items-center justify-center"
+          class="flex items-center justify-center w-8 h-8 transition rounded-full hover:bg-gray-200"
         >
-          <i class="pi pi-pencil text-gray-400"></i>
+          <i class="text-gray-400 pi pi-pencil"></i>
         </button>
 
         <button
           @click="commentDelete"
-          class="w-8 h-8 rounded-full hover:bg-gray-200 transition flex items-center justify-center"
+          class="flex items-center justify-center w-8 h-8 transition rounded-full hover:bg-gray-200"
         >
-          <i class="pi pi-trash text-gray-400"></i>
+          <i class="text-gray-400 pi pi-trash"></i>
         </button>
       </div>
     </div>
@@ -141,6 +165,7 @@ onMounted(async () => {
         ref="textareaRef"
         v-model="text"
         @input="handleInput"
+        @keydown.enter.exact="commentUpdate"
         :class="
           isReadOnly
             ? 'text-gray-500 resize-none w-full overflow-hidden'

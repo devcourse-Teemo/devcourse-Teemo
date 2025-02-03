@@ -6,16 +6,14 @@ import { Menu, useToast } from "primevue";
 import { userAPI } from "@/api/user";
 import { authAPI } from "@/api/auth";
 import { workbookAPI } from "@/api/workbook";
+import { testCenterAPI } from "@/api/testCenter";
 import { workbookLikeAPI } from "@/api/workbookLike";
-import ConfirmModal from "@/components/layout/ConfirmModal.vue";
 import ProblemTable from "@/components/layout/ProblemTable.vue";
 import like from "@/assets/icons/problem-set-board-detail/like.svg";
 import thumbsUp from "@/assets/icons/problem-set-board-detail/thumbs-up.svg";
 import addOption from "@/assets/icons/problem-set-board-detail/add-option.svg";
 import CommentList from "@/pages/problem-set-detail/components/CommentList.vue";
 import testCenterEnter from "@/assets/icons/problem-set-board-detail/test-center-enter.svg";
-
-import { testCenterAPI } from "@/api/testCenter";
 
 const toast = useToast();
 const route = useRoute();
@@ -144,6 +142,7 @@ const fetchComments = async (page = 1) => {
     page,
     itemsPerPage,
   );
+
   comments.value = result.data;
   totalRecords.value = result.totalCount;
 };
@@ -214,62 +213,79 @@ onMounted(async () => {
 <template>
   <div class="flex flex-col items-center w-full">
     <div class="h-[124px] flex items-center mb-[63px] w-full justify-between">
-      <div
-        class="w-[124px] h-[124px] mr-[21px]"
-        v-if="workbookUserCheck || workbookShared"
-      >
-        <RouterLink
-          :to="`/create-exam-room?problemSetId=${route.params.problemSetId}`"
+      <div class="flex">
+        <div
+          class="w-[124px] h-[124px] mr-[21px]"
+          v-if="workbookUserCheck || workbookShared"
         >
-          <img :src="testCenterEnter" alt="시험장 입실" />
-        </RouterLink>
-      </div>
-      <div class="h-[124px] mr-[196px] flex flex-col justify-between">
+          <RouterLink
+            :to="`/create-exam-room?problemSetId=${route.params.problemSetId}`"
+          >
+            <img :src="testCenterEnter" alt="시험장 입실" />
+          </RouterLink>
+        </div>
+
         <div class="flex flex-col justify-between h-[77px]">
-          <div class="font-laundry text-[36px] -tracking[1.1%] font-semibold">
+          <div
+            class="font-laundry text-[36px] -tracking[1.1%] font-semibold my-3"
+          >
             {{ title }}
           </div>
-          <div class="h-[23px]">{{ description }}</div>
-        </div>
-        <div class="flex w-[473px] h-[23px] ml-[7px] justify-between">
-          <div>작성자 | {{ name }}</div>
-          <div>생성일 | {{ created_at }}</div>
-          <div>수정일 | {{ updated_at }}</div>
-          <div class="flex justify-between w-8">
-            <div>
-              <img :src="thumbsUp" alt="좋아요" />
+          <div class="w-[700px] break-all">{{ description }}</div>
+          <div class="flex w-[473px] h-[23px] justify-between">
+            <div>작성자 | {{ name }}</div>
+            <div>생성일 | {{ created_at }}</div>
+            <div>수정일 | {{ updated_at }}</div>
+            <div
+              class="flex items-center gap-1 px-2 py-1 transition rounded-full"
+            >
+              <img
+                :src="thumbsUp"
+                alt="좋아요 아이콘"
+                class="w-4 h-4"
+                :class="{ 'opacity-50': !hasLiked }"
+              />
+              <span>{{ love }}</span>
             </div>
-            <div>{{ love }}</div>
           </div>
         </div>
       </div>
-      <div class="flex items-center">
-        <div class="w-8 h-8" v-if="!workbookUserCheck">
-          <button @click="handleLike">
-            <img
-              :src="like"
-              alt="좋아요"
-              :class="problemSetLike ? 'bg-orange-1' : ''"
-            />
-          </button>
-        </div>
-        <div class="w-10 h-10 ml-[26px]">
-          <button @click="openMenu" v-if="workbookUserCheck">
-            <img :src="addOption" alt="문제집 추가 설정" />
-          </button>
-          <div class="w-8 h-8" v-if="!workbookUserCheck">
-            <button
-              @click="handleShare"
-              class="w-full h-full flex items-center justify-center"
-            >
-              <i
-                class="pi pi-bookmark"
-                style="font-size: 32px"
-                :class="{ 'text-orange-500': workbookShared }"
-              ></i>
-            </button>
-          </div>
-        </div>
+
+      <div class="w-10 h-10">
+        <button @click="openMenu" v-if="workbookUserCheck">
+          <img :src="addOption" alt="문제집 추가 설정" />
+        </button>
+      </div>
+
+      <div class="flex" v-if="!workbookUserCheck">
+        <button
+          @click="handleLike"
+          class="px-2 py-2 transition rounded-full item-middle w-14 h-14"
+          :class="
+            problemSetLike ? 'bg-orange-100 text-orange-1' : 'hover:bg-gray-100'
+          "
+        >
+          <img
+            :src="like"
+            alt="좋아요"
+            class="w-10 h-10"
+            :class="{ 'opacity-50': !problemSetLike }"
+          />
+        </button>
+        <button
+          @click="handleShare"
+          class="px-2 py-2 transition rounded-full item-middle w-14 h-14"
+          :class="
+            workbookShared ? 'bg-orange-100 text-orange-1' : 'hover:bg-gray-100'
+          "
+        >
+          <i
+            class="w-10 h-10 pi pi-bookmark"
+            alt="공유받기"
+            style="font-size: 32px"
+            :class="{ 'opacity-50': !workbookShared }"
+          ></i>
+        </button>
       </div>
     </div>
     <ProblemTable
@@ -298,9 +314,6 @@ onMounted(async () => {
     appendTo="body"
     class="p-menu w-[200px] font-pretend"
   />
-
-  <ConfirmModal group="share" accept-button-name="공유 받기" />
-  <ConfirmModal group="like" accept-button-name="좋아요" />
 </template>
 
 <style scoped></style>
