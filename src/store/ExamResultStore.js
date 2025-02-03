@@ -136,22 +136,25 @@ export const useExamResultStore = defineStore("examResult", {
         }
 
         // 문제 데이터 정렬 및 추가 필드 생성
-        // problem_id 순서대로 정렬
-        // this.problems = fetchedProblems
-        //   .sort((a, b) => a.id - b.id)
-        //   .map((problem, index) => ({
-        //     ...problem,
-        //     number: index + 1,
-        //     flagged: false,}))
+        //problem_id 순서대로 정렬
 
-        // 문제 데이터 정렬 및 추가 필드 생성
-        this.problems = [...fetchedProblems]
-          .reverse()
+        this.problems = fetchedProblems
+          .sort((a, b) => a.id - b.id)
           .map((problem, index) => ({
             ...problem,
-            number: index + 1, // 문제 번호 추가
-            flagged: false, // 플래그 상태 초기화
+            number: index + 1,
+            flagged: false,
           }));
+        console.log("문제체크", this.problems);
+
+        // 문제 데이터 정렬 및 추가 필드 생성
+        // this.problems = [...fetchedProblems]
+        //   .reverse()
+        //   .map((problem, index) => ({
+        //     ...problem,
+        //     number: index + 1, // 문제 번호 추가
+        //     flagged: false, // 플래그 상태 초기화
+        //   }));
 
         // 첫 번째 문제 설정
         this.currentProblem =
