@@ -67,13 +67,15 @@ const handleTitleChange = (event) => {
 
 // 카테고리 변경 감지
 const handleCategoryChange = (event) => {
-  if (event?.value?.[0]) {
-    const rawCategory = toRaw(event.value[0]);
-
-    problemUpdateStore.updateField("category", rawCategory.id);
-  } else {
-    console.warn("유효하지 않은 카테고리 데이터:", event);
+  const rawValue = toRaw(event?.value || []);
+  
+  if (!rawValue.length) {
+    problemUpdateStore.updateField("category", null);
+    return;
   }
+
+  const selectedCat = rawValue[0];
+  problemUpdateStore.updateField("category", selectedCat.id);
 };
 
 // 공개 여부 변경 감지

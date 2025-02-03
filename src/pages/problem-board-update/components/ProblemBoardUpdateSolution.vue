@@ -1,22 +1,13 @@
 <script setup>
-import { ref, watch, nextTick } from "vue";
+import { ref, watch, nextTick, onMounted } from "vue";
 import Editor from "@toast-ui/editor";
 import "@toast-ui/editor/dist/toastui-editor.css";
 import { useProblemUpdateStore } from "@/store/problemUpdateStore";
 
 const props = defineProps({
-  answer: {
-    type: String,
-    default: "",
-  },
-  explanation: {
-    type: String,
-    default: "",
-  },
-  source: {
-    type: String,
-    default: "",
-  },
+  answer: { type: String, default: "" },
+  explanation: { type: String, default: "" },
+  source: { type: String, default: "" },
 });
 
 const emit = defineEmits(["update:source"]);
@@ -24,9 +15,9 @@ const problemUpdateStore = useProblemUpdateStore();
 const { updateField } = problemUpdateStore;
 const isOpen = ref(false);
 const explanationEditor = ref(null);
+const sourceTextarea = ref(null);
 let explanationEditorInstance = null;
 
-// 설명 에디터 변경 감지
 const handleExplanationChange = () => {
   if (explanationEditorInstance) {
     const content = explanationEditorInstance.getMarkdown();
@@ -34,8 +25,8 @@ const handleExplanationChange = () => {
   }
 };
 
-// 출처 변경 감지
 const handleSourceChange = (event) => {
+  adjustTextareaHeight(sourceTextarea.value);
   updateField("origin_source", event.target.value);
 };
 
@@ -64,7 +55,12 @@ const toggleAccordion = async () => {
   }
 };
 
-// 별도로 watch 설정
+const adjustTextareaHeight = (element) => {
+  if (!element) return;
+  element.style.height = "auto";
+  element.style.height = `${element.scrollHeight}px`;
+};
+
 watch(
   () => props.explanation,
   (newExplanation) => {
@@ -73,6 +69,24 @@ watch(
     }
   },
 );
+
+watch(
+  () => props.source,
+  async () => {
+    await nextTick();
+    if (sourceTextarea.value) {
+      adjustTextareaHeight(sourceTextarea.value);
+    }
+  },
+  { immediate: true },
+);
+
+onMounted(async () => {
+  await nextTick();
+  if (sourceTextarea.value && props.source) {
+    adjustTextareaHeight(sourceTextarea.value);
+  }
+});
 </script>
 
 <template>
@@ -104,9 +118,7 @@ watch(
 
     <div v-if="isOpen" class="p-4 border-t border-b border-gray-300 mt-4">
       <h4 class="text-lg font-semibold text-black-2 mb-4">정답</h4>
-      <p class="text-gray-700">
-        {{ answer || "답이 없습니다." }}
-      </p>
+      <p class="text-gray-700">{{ answer || "답이 없습니다." }}</p>
     </div>
     <div v-if="isOpen" class="p-4">
       <h4 class="text-lg font-semibold text-black-2 mb-4">문제 해설</h4>
@@ -117,19 +129,19 @@ watch(
     </div>
   </div>
 
-  <!-- 출처  -->
   <div
     v-if="source"
-    class="text-gray-500 mt-4 p-4 border-b border-gray-300 mb-10 item-middle gap-2"
+    class="text-gray-500 mt-4 p-4 border-b border-gray-300 mb-10 flex items-start gap-2"
   >
-    출처 |
-    <input
-      type="text"
+    <span class="flex-shrink-0 mt-1">출처 |</span>
+    <textarea
+      ref="sourceTextarea"
       :value="source"
-      :maxlength="20"
       @input="handleSourceChange"
-      class="border border-gray-300 rounded p-1 flex-grow"
-    />
+      rows="1"
+      class="border border-gray-300 rounded p-1 flex-1 overflow-hidden"
+      style="resize: none; min-height: 24px"
+    ></textarea>
   </div>
 </template>
 
