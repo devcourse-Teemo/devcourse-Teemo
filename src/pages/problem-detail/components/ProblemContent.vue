@@ -26,7 +26,6 @@ const destroyViewer = () => {
 const initViewer = async () => {
   isLoading.value = true;
   try {
-    isLoading.value = true;
     // 기존 viewer 정리
     destroyViewer();
 

@@ -141,9 +141,17 @@ onMounted(async () => {
     <ProblemContent :problem="problemStore.problem" />
 
     <ProblemSolution
+      :title="problemStore.problem?.title"
+      :question="problemStore.problem?.question"
       :answer="problemStore.problem?.answer"
       :explanation="problemStore.problem?.explanation"
       :source="problemStore.problem?.origin_source"
+      :options="{
+        option_one: problemStore.problem?.option_one,
+        option_two: problemStore.problem?.option_two,
+        option_three: problemStore.problem?.option_three,
+        option_four: problemStore.problem?.option_four,
+      }"
     />
 
     <CommentList
