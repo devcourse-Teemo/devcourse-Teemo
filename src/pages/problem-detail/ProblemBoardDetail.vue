@@ -1,7 +1,7 @@
 <script setup>
 import { ref, onMounted } from "vue";
 import { useRoute, useRouter } from "vue-router";
-import { Dialog, Button, ConfirmDialog } from "primevue";
+import { Dialog, Button } from "primevue";
 import { useProblemStore } from "@/store/problemStore";
 import { useAuthStore } from "@/store/authStore";
 import { problemLikeAPI } from "@/api/problemLike";
