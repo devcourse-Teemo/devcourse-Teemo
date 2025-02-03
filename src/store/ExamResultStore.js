@@ -44,7 +44,6 @@ export const useExamResultStore = defineStore("examResult", {
   actions: {
     //시험점수 가져오기
     async initializeExamData(uid, testResultId) {
-      console.log("테스트테스트", { uid, testResultId });
       if (this.isInitializing) {
         this.isInitializing = false;
       }
@@ -58,13 +57,13 @@ export const useExamResultStore = defineStore("examResult", {
           });
           return;
         }
-        console.log("testResultAPI.getScore 호출");
+
         // 점수 데이터 호출
         const { total, correct } = await testResultAPI.getScore(
           testResultId,
           uid,
         );
-        console.log("testResultAPI.getScore 응답:", { total, correct });
+
         // 상태 업데이트
         this.totalCount = total;
         this.correctCount = correct;
@@ -135,15 +134,7 @@ export const useExamResultStore = defineStore("examResult", {
           return;
         }
 
-        // 문제 데이터 정렬 및 추가 필드 생성
         //problem_id 순서대로 정렬
-
-        // 정렬후에 console.log 찍어보기
-        // 진짜로 problems 순서대로 나오는지
-        console.log(
-          "정렬 전 문제 ID 리스트:",
-          fetchedProblems.map((p) => p.id),
-        );
         this.problems = fetchedProblems
           .sort((a, b) => a.id - b.id)
           .map((problem, index) => ({
@@ -151,13 +142,6 @@ export const useExamResultStore = defineStore("examResult", {
             number: index + 1,
             flagged: false,
           }));
-        console.log("문제체크", this.problems);
-
-        console.log(
-          "정렬 후 문제 ID 리스트:",
-          this.problems.map((p) => p.id),
-        );
-        console.log("문제 리스트 업데이트 완료:", this.problems);
 
         // 첫 번째 문제 설정
         this.currentProblem =

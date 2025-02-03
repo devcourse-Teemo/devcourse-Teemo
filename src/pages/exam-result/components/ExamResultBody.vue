@@ -42,10 +42,9 @@ const { correctCount, totalCount, averageCount, isTableData } =
 
 const initializeData = async () => {
   try {
-    console.log("initializeData 호출");
     const testResultId = route.params.examResultId;
     if (!testResultId) throw new Error("잘못된 test_result_id");
-    console.log("testResultId:", testResultId);
+
     if (!authStore.user) {
       await authStore.initializeAuth();
     }
@@ -54,13 +53,10 @@ const initializeData = async () => {
       initializeExamData(authStore.user.id, testResultId),
       fetchProblems(testResultId),
     ]);
-    console.log("initializeExamData 및 fetchProblems 호출 완료");
 
     const testCenterId = await testResultAPI.fetchTestCenterId(testResultId);
     if (testCenterId) {
-      console.log("getScoresByTestCenter 호출 시작");
       await getScoresByTestCenter(testCenterId);
-      console.log("getScoresByTestCenter 호출 완료");
     }
   } catch (err) {
     console.error("초기화 실패, catchError :", err);
