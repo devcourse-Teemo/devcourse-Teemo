@@ -171,6 +171,7 @@ export const useProblemUpdateStore = defineStore("problemUpdate", () => {
         option_three: option_three?.trim(),
         option_four: option_four?.trim(),
         shared,
+        updated_at: new Date().toISOString(),
       };
 
       const data = await problemAPI.update(id, updateData);
