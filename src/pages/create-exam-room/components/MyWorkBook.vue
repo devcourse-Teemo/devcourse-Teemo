@@ -58,7 +58,16 @@ watchEffect(async () => {
         </p>
       </div>
       <div class="flex justify-between items-center mt-2">
-        <img v-if="book.shared" :src="shareIcon" alt="share" />
+        <!-- 공유받은 문제집인 경우 생성자 정보 표시 -->
+        <div v-if="book.user" class="flex items-center gap-2">
+          <img 
+            :src="book.user.avatar_url || '/default-avatar.png'" 
+            alt="프로필" 
+            class="w-7 h-7 rounded-full"
+          />
+          <span class="text-black-1">{{ book.user.name }}</span>
+        </div>
+        <img v-else-if="book.shared" :src="shareIcon" alt="share" />
         <span v-else class="w-6"></span>
         <p class="font-medium">{{ book.problem_count || 0 }}문제</p>
       </div>
