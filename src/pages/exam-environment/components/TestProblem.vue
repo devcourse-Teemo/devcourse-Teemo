@@ -35,8 +35,8 @@ const addAgainViewProblem = async () => {
   isAgainViewProblem.value = true;
   toast.add({
     severity: "success",
-    summary: "다시 볼 문제 추가",
-    detail: "다시 볼 문제에 추가되었습니다.",
+    summary: "다시 풀 문제 추가",
+    detail: "다시 풀 문제에 추가되었습니다.",
     life: 3000,
   });
 };
@@ -46,15 +46,14 @@ const deleteAgainViewProblem = async () => {
   isAgainViewProblem.value = false;
   toast.add({
     severity: "success",
-    summary: "다시 볼 문제 삭제",
-    detail: "다시 볼 문제에서 삭제되었습니다.",
+    summary: "다시 풀 문제 삭제",
+    detail: "다시 풀 문제에서 삭제되었습니다.",
     life: 3000,
   });
 };
 
 const handleImageClick = (event) => {
   const img = event.target;
-  console.log(img);
   if (img.requestFullscreen) {
     img.requestFullscreen();
   } else if (img.mozRequestFullScreen) {
@@ -77,12 +76,12 @@ const addImageClickListeners = () => {
 };
 
 watch(
-  () => problem.id,
-  async (problemId) => {
+  () => [problem.id, el.value],
+  async ([problemId, elValue]) => {
     // 마크다운 Viewer 설정
     if (el.value && problem.question) {
       viewer.value = new Viewer({
-        el: el.value,
+        el: elValue,
         initialValue: problem.question,
       });
     }
@@ -90,7 +89,7 @@ watch(
     // 이미지 전체화면 이벤트리스너 등록
     addImageClickListeners();
 
-    // 다시 볼 문제 여부 체크
+    // 다시 풀 문제 여부 체크
     const data = await againViewProblemAPI.getByProblemId(
       user.value.id,
       problemId,
@@ -109,26 +108,30 @@ onBeforeUnmount(() => {
 </script>
 <template>
   <article class="flex flex-col w-[1000px] mx-auto">
-    <div class="flex items-center gap-4 pb-6 w-full border-b">
-      <h2>문제 {{ currentProblemIndex + 1 }} : {{ problem?.title }}</h2>
+    <div class="flex flex-col gap-8 pb-6 border-b">
       <Button
         v-if="isAgainViewProblem"
         @click="deleteAgainViewProblem"
-        label="다시 볼 문제"
-        icon="pi pi-flag-fill"
+        label="다시 풀 문제"
+        icon="pi pi-flag"
         size="small"
         severity="secondary"
+        class="w-24 !bg-orange-3 !text-orange-500"
       />
       <Button
         v-else
         @click="addAgainViewProblem"
-        label="다시 볼 문제"
+        label="다시 풀 문제"
         icon="pi pi-flag"
         size="small"
         severity="secondary"
+        class="w-24"
       />
+      <h2>문제 {{ currentProblemIndex + 1 }} : {{ problem?.title }}</h2>
     </div>
     <div ref="el" class="w-full overflow-hidden mt-6 mb-12"></div>
+
+    <!-- 4지선다 -->
     <template v-if="problem?.problem_type === 'multiple_choice'">
       <div class="flex flex-col gap-4 mb-20">
         <div
@@ -153,8 +156,10 @@ onBeforeUnmount(() => {
         </div>
       </div>
     </template>
+
+    <!-- OX -->
     <template v-if="problem?.problem_type === 'ox'">
-      <div class="flex items-center gap-4 mb-20">
+      <div class="flex justify-center items-center gap-4 mb-20">
         <button
           v-for="(option, index) in ['O', 'X']"
           @click="emit('selectAnswer', option)"
@@ -162,7 +167,7 @@ onBeforeUnmount(() => {
           :id="index"
           type="button"
           :class="[
-            'flex justify-center items-center w-full border-2 border-solid text-2xl font-semibold py-6 rounded transition-colors',
+            'flex justify-center items-center w-24 border-2 border-solid text-2xl font-semibold py-2 rounded-lg transition-colors',
             userAnswer === option
               ? 'border-orange-1 bg-orange-1 text-white'
               : 'text-black-3 hover:bg-orange-1/30 hover:border-orange-1/30',
@@ -179,5 +184,12 @@ onBeforeUnmount(() => {
   max-width: 100%;
   cursor: pointer;
   object-fit: cover;
+}
+
+:deep(.toastui-editor-contents) {
+  font-family: "Pretendard";
+}
+:deep(p) {
+  font-size: 16px;
 }
 </style>

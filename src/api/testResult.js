@@ -93,7 +93,8 @@ const search = async (userId, keyword, startDate, endDate) => {
       .from("test_result")
       .select("*, test_center(*, workbook(id, title, description))")
       .eq("uid", userId)
-      .not("test_center", "is", null);
+      .not("test_center", "is", null)
+      .order("created_at", { ascending: false });
 
     if (keyword) {
       const { data: workbooks, error: workbookError } = await supabase
@@ -194,12 +195,12 @@ const getAverage = async (testResultId) => {
 
     const testCenterId = testResultData.test_center_id;
 
-    // Step 2: 해당 시험장의 모든 데이터 가져오기
+    // 해당 시험장의 모든 데이터 가져오기
     const { data: results, error: resultsError } = await supabase
       .from("test_result")
       .select("uid, correct_count, created_at")
       .eq("test_center_id", testCenterId)
-      .order("created_at", { ascending: false }); // 가장 최근 시험 결과 우선 정렬
+      .order("created_at", { ascending: false });
 
     if (resultsError) throw resultsError;
 
@@ -217,11 +218,10 @@ const getAverage = async (testResultId) => {
       (sum, row) => sum + (row.correct_count || 0),
       0,
     );
-    const uniqueUsersCount = latestResults.length;
+    const usersCount = latestResults.length;
 
-    const averageScore =
-      uniqueUsersCount > 0 ? totalCorrect / uniqueUsersCount : 0;
-    return Math.round(averageScore);
+    const averageScore = usersCount > 0 ? totalCorrect / usersCount : 0;
+    return averageScore.toFixed(1);
   } catch (error) {
     console.error("평균 계산 오류", error);
     return 0;
@@ -289,6 +289,46 @@ const fetchTestCenterId = async (testResultId) => {
   }
 };
 
+// 시험장의 문제집 정보 가져오기
+const fetchWorkbookFromTestResult = async (testResultId) => {
+  if (!testResultId) {
+    console.error("[ERROR] testResultId is required");
+    return null;
+  }
+  try {
+    const { data, error } = await supabase
+      .from("test_result")
+      .select(
+        `
+        test_center!inner(id,
+          workbook!inner(id, title, description)
+        )
+      `,
+      )
+      .eq("id", testResultId);
+
+    if (error) {
+      console.error("supabase query 오류", error.message);
+      return null;
+    }
+
+    if (!data || data.length === 0) {
+      console.warn(
+        "[WARN] No workbook data found for testResultId:",
+        testResultId,
+      );
+      return null;
+    }
+
+    const workbook = data[0]?.test_center?.workbook;
+
+    return workbook;
+  } catch (error) {
+    console.error("[ERROR] Unexpected error occurred:", error.message);
+    return null;
+  }
+};
+
 export const testResultAPI = {
   add,
   getAllByUserId,
@@ -298,4 +338,5 @@ export const testResultAPI = {
   getAverage,
   getUsersScores,
   fetchTestCenterId,
+  fetchWorkbookFromTestResult,
 };

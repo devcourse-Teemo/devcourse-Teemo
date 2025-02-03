@@ -1,24 +1,12 @@
 <script setup>
-import {
-  ref,
-  onMounted,
-  onBeforeUnmount,
-  defineProps,
-  watchEffect,
-  computed,
-  inject,
-} from "vue";
+import { ref, defineProps, computed, inject } from "vue";
 import {
   Button,
   Column,
   DataTable,
   Select,
   Tag,
-  InputText,
-  Listbox,
-  Textarea,
   useToast,
-  ToggleSwitch,
   useConfirm,
 } from "primevue";
 import { storeToRefs } from "pinia";
@@ -30,15 +18,14 @@ import { workbookAPI } from "@/api/workbook";
 import { useAuthStore } from "@/store/authStore";
 import plus from "@/assets/icons/problem-board/plus.svg";
 import minus from "@/assets/icons/problem-board/minus.svg";
-import sharedIcon from "@/assets/icons/my-problem-sets/share.svg";
 import statusWrong from "@/assets/icons/problem-board/status-wrong.svg";
 import statusSolved from "@/assets/icons/problem-board/status-solved.svg";
-import seeMyProblems from "@/assets/icons/my-problems/see-my-problems.svg";
 import checkedMyProblem from "@/assets/icons/my-problems/color-my-problems.svg";
 import { useRoute } from "vue-router";
 import { useRouter } from "vue-router";
-import { watch } from "vue";
+import { watch, onBeforeMount } from "vue";
 import ConfirmModal from "./ConfirmModal.vue";
+import ProblemSetPopUp from "./ProblemSetPopUp.vue";
 
 const props = defineProps({
   problems: {
@@ -93,6 +80,10 @@ const props = defineProps({
     type: Boolean,
     default: true,
   },
+  newTab: {
+    type: Boolean,
+    default: false,
+  },
   workbookId: String,
 });
 
@@ -107,14 +98,12 @@ const currentSort = route.query.sort === SORT.likes ? SORTS[1] : SORTS[0];
 
 const popup = ref(null);
 const sorts = ref(SORTS);
-const title = ref("");
-const shared = ref(false);
-const description = ref("");
-const problemSets = ref([]);
 const sort = ref(currentSort);
+const first = ref(0);
+const rows = ref(10);
 const selectedProblems = ref([]);
 const showProblemSet = ref(false);
-const activeFilter = ref(null);
+const activeFilter = ref(route.query.type || null);
 
 const handleAddClick = () => {
   emit("open-dialog");
@@ -126,10 +115,12 @@ const handleFilterButtonClick = (filterType) => {
     // 같은 버튼을 두 번 클릭하면 필터 해제
     activeFilter.value = null;
     emit("filter-change", "all");
+    router.replace({ query: { ...route.query, type: undefined } });
   } else {
     // 새로운 필터 적용
     activeFilter.value = filterType;
     emit("filter-change", filterType);
+    router.replace({ query: { type: filterType } });
   }
 };
 
@@ -143,12 +134,10 @@ const ShowProblemSetPopup = () => {
 };
 
 const showAddProblemSet = ref(false);
-const showAddProblemSetPopup = () => {
-  showAddProblemSet.value = true;
-};
 
-const addProblemToProblemSet = async (problemSetId, problems) => {
-  const problemIds = problems.map((problem) => problem.id);
+const addProblemToProblemSet = async (selectedProblemSet) => {
+  const problemSetId = selectedProblemSet.id;
+  const problemIds = selectedProblems.value.map((problem) => problem.id);
   const { data, insertedCount } = await problemAPI.addMultiple(
     problemSetId,
     problemIds,
@@ -169,19 +158,7 @@ const addProblemToProblemSet = async (problemSetId, problems) => {
     });
   }
 
-  if (showProblemSet.value) showProblemSet.value = false;
-  if (showAddProblemSet.value) showAddProblemSet.value = false;
   selectedProblems.value = [];
-};
-
-const addProblemSet = async () => {
-  const problemSet = await workbookAPI.add(
-    title.value,
-    description.value,
-    shared.value,
-  );
-  problemSets.value = [...problemSets.value, problemSet];
-  showAddProblemSet.value = false;
 };
 
 const deleteProblem = (problem_id) => {
@@ -228,12 +205,6 @@ const messageStatus = (status) => {
       return "없음";
   }
 };
-const handleClickOutside = (event) => {
-  if (popup?.value && !popup?.value.contains(event.target)) {
-    if (showProblemSet.value) showProblemSet.value = false;
-    if (showAddProblemSet.value) showAddProblemSet.value = false;
-  }
-};
 
 const sortedProblems = computed(() => {
   if (!props.problems) return [];
@@ -242,42 +213,70 @@ const sortedProblems = computed(() => {
   switch (sort.value?.value) {
     case SORT.latest:
       return problems.sort(
-        (a, b) => new Date(b.created_at) - new Date(a.created_at)
+        (a, b) => new Date(b.created_at) - new Date(a.created_at),
       );
     case SORT.likes:
       return problems.sort((a, b) => {
-        // problem.likes[0]?.count가 있는 경우
-        const aLikes = a.likes?.[0]?.count ?? 0;
-        const bLikes = b.likes?.[0]?.count ?? 0;
-        
+        // problem.likes_count가 있는 경우
+        const aLikes = a.likes_count ?? 0;
+        const bLikes = b.likes_count ?? 0;
+
         // problem.problem.likes[0]?.count가 있는 경우 (공유받은 문제)
-        const aSharedLikes = a.problem?.likes?.[0]?.count ?? 0;
-        const bSharedLikes = b.problem?.likes?.[0]?.count ?? 0;
-        
+        const aSharedLikes = a.likes ?? 0;
+        const bSharedLikes = b.likes ?? 0;
+
         // 둘 중 존재하는 값 사용
-        return (bLikes || bSharedLikes) - (aLikes || aSharedLikes);
+        if (aLikes === bLikes && aSharedLikes === bSharedLikes) {
+          return new Date(b.created_at) - new Date(a.created_at);
+        } else {
+          return (bLikes || bSharedLikes) - (aLikes || aSharedLikes);
+        }
       });
     default:
       return problems;
   }
 });
 
+watch(
+  () => route.query.status,
+  () => {
+    first.value = 0;
+  },
+);
+watch(
+  () => route.query.keyword,
+  () => {
+    first.value = 0;
+  },
+);
+watch(
+  () => route.query.startDate,
+  () => {
+    first.value = 0;
+  },
+);
+watch(
+  () => route.query.endDate,
+  () => {
+    first.value = 0;
+  },
+);
+
 watch(sort, (newSort) => {
+  first.value = 0;
   const newQuery = { ...route.query, sort: newSort.value };
+  router.replace({ query: newQuery, page: 1 });
+});
+
+watch(first, (newFirst) => {
+  const page = newFirst / rows.value + 1;
+  const newQuery = { ...route.query, page };
   router.replace({ query: newQuery });
 });
 
-watchEffect(async () => {
-  if (!user.value) return;
-  problemSets.value = await workbookAPI.getAll(user.value.id);
-});
-
-onMounted(() => {
-  window.addEventListener("click", handleClickOutside);
-});
-
-onBeforeUnmount(() => {
-  window.removeEventListener("click", handleClickOutside);
+onBeforeMount(async () => {
+  const page = route.query.page ?? 1;
+  first.value = (page - 1) * rows.value;
 });
 </script>
 <template>
@@ -289,7 +288,7 @@ onBeforeUnmount(() => {
         </p>
         <Button
           v-if="showProblem"
-          label="다시 볼 문제"
+          label="다시 풀 문제"
           icon="pi pi-flag"
           size="small"
           severity="secondary"
@@ -301,40 +300,6 @@ onBeforeUnmount(() => {
           ]"
           @click="handleFilterButtonClick('againView')"
         />
-        <Button
-          v-if="showMyProblem"
-          label="내 문제만 보기"
-          size="small"
-          severity="secondary"
-          :class="[
-            'text-sm',
-            activeFilter === 'myProblems'
-            ? '!bg-orange-3 !text-orange-500'
-            : 'text-white bg-navy-4',
-          ]"
-          @click="handleFilterButtonClick('myProblems')"
-        >
-          <template #icon>
-            <img :src="seeMyProblems" alt="seeMyProblemsIcon" class="w-5 h-5" />
-          </template>
-        </Button>
-        <Button
-          v-if="showSharedProblem"
-          label="공유받은 문제"
-          size="small"
-          severity="secondary"
-          :class="[
-            'text-sm',
-            activeFilter === 'sharedProblems'
-            ? '!bg-orange-3 !text-orange-500'
-            : 'text-white bg-navy-4',
-          ]"
-          @click="handleFilterButtonClick('sharedProblems')"
-        >
-          <template #icon>
-            <img :src="sharedIcon" alt="sharedIcon" class="w-5 h-5" />
-          </template>
-        </Button>
         <button
           v-if="showAdd"
           @click="handleAddClick"
@@ -356,6 +321,7 @@ onBeforeUnmount(() => {
     <div class="overflow-hidden border border-black-5 rounded-2xl">
       <DataTable
         v-model:selection="selectedProblems"
+        v-model:first="first"
         :value="sortedProblems"
         dataKey="id"
         paginator
@@ -370,7 +336,7 @@ onBeforeUnmount(() => {
         <Column
           v-if="showCheckbox"
           selectionMode="multiple"
-          headerStyle="width: 3rem"
+          headerStyle="min-width: 3rem"
         ></Column>
         <Column v-if="showDelete" header="제거" field="delete">
           <template #body="slotProps">
@@ -393,7 +359,12 @@ onBeforeUnmount(() => {
             </button>
           </template>
         </Column>
-        <Column field="latest_status" header="상태" v-if="showStatus">
+        <Column
+          field="latest_status"
+          header="상태"
+          headerStyle="min-width: 5rem"
+          v-if="showStatus"
+        >
           <template #body="slotProps">
             <div
               v-if="slotProps.data.latest_status"
@@ -408,10 +379,35 @@ onBeforeUnmount(() => {
             </div>
           </template>
         </Column>
-        <Column field="title" class="w-[45%]" header="제목">
+        <Column field="title" class="w-[45%]" header="제목" v-if="!newTab">
+          <template #body="slotProps">
+            <div class="flex justify-between gap-6 w-full">
+              <RouterLink
+                :to="`${
+                  slotProps.data.id === user?.id
+                    ? '/my-problems'
+                    : '/problem-board'
+                }/${slotProps.data.id}`"
+              >
+                <span class="w-full cursor-pointer line-clamp-1">{{
+                  slotProps.data.title
+                }}</span>
+              </RouterLink>
+              <img
+                v-if="slotProps.data.uid === user?.id"
+                :src="checkedMyProblem"
+                alt="checkedMyProblemIcon"
+                class="w-5 h-5"
+                v-tooltip.top="'내가 만든 문제'"
+              />
+            </div>
+          </template>
+        </Column>
+        <Column field="title" class="w-[45%]" header="제목" v-if="newTab">
           <template #body="slotProps">
             <div class="flex justify-between w-full">
               <RouterLink
+                target="_blank"
                 :to="`${
                   slotProps.data.id === user?.id
                     ? '/my-problems'
@@ -432,7 +428,12 @@ onBeforeUnmount(() => {
             </div>
           </template>
         </Column>
-        <Column field="problem_type" header="문제 유형" v-if="showCategory">
+        <Column
+          field="problem_type"
+          header="문제 유형"
+          headerStyle="min-width: 6rem"
+          v-if="showCategory"
+        >
           <template #body="slotProps">
             <Tag
               v-if="getProblemType(slotProps.data.problem_type) === '4지선다'"
@@ -443,12 +444,27 @@ onBeforeUnmount(() => {
           </template>
         </Column>
 
-        <Column field="category_name" header="카테고리">
+        <Column
+          field="category_name"
+          header="카테고리"
+          headerStyle="min-width: 9rem"
+        >
           <template #body="slotProps">
-            {{ slotProps.data.category_name }}
+            <span class="line-clamp-1">
+              {{ slotProps.data.category_name }}
+            </span>
           </template>
         </Column>
-        <Column field="origin_source" header="출처"></Column>
+        <Column
+          field="origin_source"
+          header="출처"
+          headerStyle="min-width: 9rem"
+          ><template #body="slotProps">
+            <span class="line-clamp-1">
+              {{ slotProps.data.origin_source }}
+            </span>
+          </template></Column
+        >
       </DataTable>
     </div>
 
@@ -463,70 +479,13 @@ onBeforeUnmount(() => {
         @click="ShowProblemSetPopup"
       />
 
-      <div v-if="showProblemSet" class="w-64 absolute -bottom-0 -right-[17rem]">
-        <Listbox
-          :key="problemSets.length"
-          :options="problemSets"
-          filter
-          optionLabel="title"
-          listStyle="max-height: 14rem"
-        >
-          <template #option="slotProps">
-            <div
-              class="flex items-center w-full gap-2"
-              @click="
-                addProblemToProblemSet(slotProps.option.id, selectedProblems)
-              "
-            >
-              <i class="pi pi-folder"></i>
-              <div>{{ slotProps.option.title }}</div>
-            </div>
-          </template>
-        </Listbox>
-        <Button
-          label="새로운 문제집 만들기"
-          icon="pi pi-plus"
-          class="w-[14.4rem]"
-          @click="showAddProblemSetPopup"
-        />
-      </div>
-
-      <div
-        v-if="showAddProblemSet"
-        class="w-64 absolute bottom-0 -right-[34rem]"
-      >
-        <div class="flex flex-col gap-4 px-4 py-2 bg-white border rounded-lg">
-          <div class="flex flex-col gap-2">
-            <label for="title" class="text-sm">문제집 이름</label>
-            <InputText
-              id="title"
-              v-model="title"
-              placeholder="문제집 이름을 입력해주세요"
-            />
-          </div>
-          <div class="flex flex-col gap-2">
-            <label for="description" class="text-sm">문제집 설명</label>
-            <Textarea
-              v-model="description"
-              id="description"
-              class="border rounded-md resize-none font-sans px-2 py-1.5"
-              rows="5"
-              cols="30"
-              placeholder="문제집 설명을 입력해주세요"
-            />
-          </div>
-          <div class="flex flex-col gap-2">
-            <label for="shared" class="text-sm">게시판 공유 여부</label>
-            <ToggleSwitch id="shared" v-model="shared" />
-          </div>
-        </div>
-        <Button
-          @click="addProblemSet"
-          label="문제집 추가하기"
-          icon="pi pi-plus"
-          class="w-[14.4rem]"
-        />
-      </div>
+      <ProblemSetPopUp
+        :parent-ref="popup"
+        v-model:show-problem-set="showProblemSet"
+        v-model:show-add-popup="showAddProblemSet"
+        @clickProblemSet="addProblemToProblemSet"
+        class="absolute -bottom-0 -right-[17rem]"
+      />
     </div>
   </section>
   <ConfirmModal group="delete" acceptButtonName="제거" />

@@ -30,7 +30,6 @@ export const storageAPI = {
       // 사용자 UID 기반 경로 설정
       // TODO: 로그아웃 안했는데 user이 null이 됨 -> token 갱신 이슈?
       const { user } = useAuthStore();
-      console.log(user);
       if (!user) {
         throw new Error("사용자 인증에 실패했습니다. 다시 로그인해주세요.");
       }
@@ -38,7 +37,6 @@ export const storageAPI = {
       
       const userUID = user.id; // 로그인된 사용자 UID 가져오기
       const filePath = `${userUID}/problem_image/${fileName}`;
-      console.log("Generated filePath:", filePath);
 
       // Storage에 업로드
       const { data, error } = await supabase.storage
@@ -54,7 +52,6 @@ export const storageAPI = {
       const {
         data: { publicUrl },
       } = supabase.storage.from("problem_image").getPublicUrl(filePath);
-      console.log(publicUrl);
       return publicUrl;
     } catch (error) {
       console.error("이미지 업로드 실패:", error);

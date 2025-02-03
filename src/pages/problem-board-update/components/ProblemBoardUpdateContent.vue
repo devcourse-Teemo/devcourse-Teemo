@@ -46,9 +46,8 @@ onMounted(() => {
     toolbarItems: [
       ["heading", "bold", "italic", "strike"],
       ["hr", "quote"],
-      ["ul", "ol", "task", "indent", "outdent"],
-      ["table", "image", "link"],
-      ["code", "codeblock"],
+      ["ul", "ol"],
+      ["table", "image"],
     ],
     events: {
       change: handleEditorChange,
@@ -177,5 +176,14 @@ watch(
   margin-top: 12px;
   content: "";
   display: block;
+}
+:deep(button) {
+  text-align: center;
+}
+:deep(.toastui-editor-contents) {
+  font-family: "Pretendard";
+}
+:deep(p) {
+  font-size: 16px;
 }
 </style>

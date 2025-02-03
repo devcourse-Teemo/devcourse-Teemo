@@ -1,6 +1,6 @@
 import { supabase } from "./index.js";
 
-const fetchProblemsForTestResult = async (testResultId) => {
+export const fetchProblemsForTestResult = async (testResultId) => {
   try {
     const { data: testResult, error: testResultError } = await supabase
       .from("test_result")
@@ -87,5 +87,3 @@ const fetchProblemsForTestResult = async (testResultId) => {
     return [];
   }
 };
-
-export { fetchProblemsForTestResult };

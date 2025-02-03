@@ -2,7 +2,6 @@
 import { ref, watchEffect } from "vue";
 import { useToast } from "primevue/usetoast";
 import { useAuthStore } from "@/store/authStore";
-import RadioButton from "primevue/radiobutton";
 import InputText from "primevue/inputtext";
 import Button from "primevue/button";
 import UserListItem from "./UserListItem.vue";
@@ -32,9 +31,6 @@ const fetchFollowing = async () => {
   try {
     if (authStore.user?.id) {
       const followData = await followAPI.getFollowing(authStore.user.id);
-
-      // 데이터 확인
-      // console.log("followData:", followData);
 
       // followingUsers 값 생성
       followingUsers.value = followData.map((item) => ({
@@ -203,7 +199,6 @@ watchEffect(() => {
     ...user,
     uid: user.uid || user.id, // uid 값을 올바르게 설정
   }));
-  // console.log("Selected users:", selectedUsers.value); // 선택된 사용자 로그 출력
 });
 </script>
 
@@ -294,5 +289,4 @@ watchEffect(() => {
       </ul>
     </section>
   </div>
-
 </template>

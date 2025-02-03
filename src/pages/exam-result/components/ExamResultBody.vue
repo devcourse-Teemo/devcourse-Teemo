@@ -6,7 +6,7 @@ import ExamResultChart from "./ExamResultChart.vue";
 import ExamResultTable from "./ExamResultTable.vue";
 import ExamResultProblems from "./ExamResultProblems.vue";
 
-import { ref, onMounted, watch } from "vue";
+import { ref, watch } from "vue";
 import { storeToRefs } from "pinia";
 import { useAuthStore } from "@/store/authStore";
 import { useExamResultStore } from "@/store/ExamResultStore";
@@ -16,6 +16,9 @@ import { testResultAPI } from "@/api/testResult";
 const authStore = useAuthStore();
 const examResultStore = useExamResultStore();
 const route = useRoute();
+const isLoading = ref(false);
+const { initializeExamData, fetchProblems, getScoresByTestCenter } =
+  examResultStore;
 
 // 토글 관리
 const isCollapsed = ref(true);
@@ -34,65 +37,50 @@ const toggleShowGrade = async () => {
   isShowed.value = true;
 };
 
-const {
-  currentProblem,
-  correctCount,
-  totalCount,
-  averageCount,
-  isFetchingProblems,
-  isTableData,
-  isLoading,
-  error,
-} = storeToRefs(examResultStore);
+const { correctCount, totalCount, averageCount, isTableData } =
+  storeToRefs(examResultStore);
 
 const initializeData = async () => {
   try {
-    if (isFetchingProblems.value) return;
-
-    // 초기화 상태 설정
-    examResultStore.isFetchingProblems = true;
-    examResultStore.error = null;
+    const testResultId = route.params.examResultId;
+    if (!testResultId) throw new Error("잘못된 test_result_id");
 
     if (!authStore.user) {
       await authStore.initializeAuth();
     }
 
-    const testResultId = Number(route.params.examResultId);
-    if (!testResultId) throw new Error("잘못된 test_result_id");
-
     await Promise.all([
-      examResultStore.initializeExamData(authStore.user.id, testResultId),
-      examResultStore.fetchProblems(testResultId),
+      initializeExamData(authStore.user.id, testResultId),
+      fetchProblems(testResultId),
     ]);
 
     const testCenterId = await testResultAPI.fetchTestCenterId(testResultId);
     if (testCenterId) {
-      await examResultStore.getScoresByTestCenter(testCenterId);
+      await getScoresByTestCenter(testCenterId);
     }
   } catch (err) {
-    console.error("초기화 실패, catchError :", error);
-    examResultStore.error = err.message || "문제를 불러오는 데 실패했습니다.";
+    console.error("초기화 실패, catchError :", err);
   } finally {
-    examResultStore.isFetchingProblems = false;
+    isLoading.value = false;
   }
 };
 
-onMounted(initializeData);
-
 watch(
   () => route.params.examResultId,
-  async (newId, oldId) => {
-    if (newId && newId !== oldId) {
-      await initializeData();
+  async (newId) => {
+    if (!newId) {
+      console.warn("watch: 유효하지 않은 testResultId");
+      return;
     }
+    await initializeData();
   },
+  { immediate: true },
 );
 </script>
 
 <template>
   <section class="w-full pl-4">
     <div class="grid grid-cols-3 gap-4">
-      <!-- 카드 시작 -->
       <div
         class="flex items-center pl-8 pr-4 pb-10 pt-4 bg-white border border-[#D4D4D4] rounded-2xl text-start overflow-hidden"
       >
@@ -131,9 +119,7 @@ watch(
     <div class="border border-[#D4D4D4] rounded-2xl mt-8 p-4">
       <ExamResultChart />
     </div>
-    <!-- 문제 테이블 -->
     <ExamResultTable />
-    <!-- 문제풀이 보기 -->
     <div
       class="rounded-[16px] border border-gray-300 bg-white overflow-hidden mt-8"
     >
@@ -158,8 +144,6 @@ watch(
           />
         </svg>
       </div>
-
-      <!-- 컨텐츠 영역 -->
       <div
         :class="[
           'overflow-hidden transition-all duration-300 ease-in-out',
@@ -171,8 +155,6 @@ watch(
         </div>
       </div>
     </div>
-
-    <!-- 다른 사용자 점수 보기 -->
     <div
       class="rounded-[16px] border border-gray-300 bg-white overflow-hidden mt-8"
     >
@@ -199,19 +181,21 @@ watch(
       </div>
       <!--점수 테이블 -->
       <div v-if="isShowed">
-        <table class="table-auto border-collapse border border-gray-300 w-full">
+        <table class="w-full table-auto border-collapse">
           <thead>
             <tr>
-              <th class="border border-gray-400 px-2 py-2">Name</th>
-              <th class="border border-gray-400 px-2 py-2">Score</th>
+              <th class="border-t border-b border-r border-gray-300 px-1 py-1">
+                Name
+              </th>
+              <th class="border-t border-b border-gray-300 px-1 py-1">Score</th>
             </tr>
           </thead>
           <tbody>
             <tr v-for="item in isTableData" :key="item.uid">
-              <td class="border border-gray-400 px-2 py-1 text-center">
+              <td class="border-t border-r border-gray-300 text-center">
                 {{ item.userName }}
               </td>
-              <td class="border border-gray-400 px-2 py-1 text-center">
+              <td class="border-t border-gray-300 px-1 py-1 text-center">
                 {{ item.correct_count }}
               </td>
             </tr>

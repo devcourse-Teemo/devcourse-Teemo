@@ -1,24 +1,13 @@
 <script setup>
 import plusPath from "@/assets/icons/problem-editor/plus.svg";
-import { ref } from "vue";
+import { storeToRefs } from "pinia";
+import { useCreateProblemStore } from "@/store/createProblemStore";
 
-const props = defineProps({
-  problemList: {
-    type: Array,
-    default: () => [],
-  },
-  targetProblem: {
-    type: Number,
-  },
-});
-const emits = defineEmits(["addProblem", "onClickProblemList"]);
-const targetProblemIdx = ref(props.targetProblem);
+const createProblemStore = useCreateProblemStore();
+const { createdProblems, targetProblem } = storeToRefs(createProblemStore);
+
 const onClickProblem = (idx) => {
-  if (targetProblemIdx) {
-    targetProblemIdx.value = idx;
-  }
-  emits("onClickProblemList", idx);
-  console.log(targetProblemIdx.value);
+  createProblemStore.setTargetProblem(idx);
 };
 </script>
 
@@ -28,23 +17,42 @@ const onClickProblem = (idx) => {
       class="header font-semibold text-md text-black-2 flex justify-between items-center mb-2"
     >
       <!-- 문제 (props.problemLists.length) -->
-      <span>문제 ({{ props.problemList.length }})</span>
-      <span
+      <!-- <span>문제 ({{ props.problemList.length }})</span> -->
+
+      <span>문제 ({{ createdProblems.problemLists.length }})</span>
+      <!-- <span
         role="button"
         class="bg-white border border-black-3 p-1 rounded-full w-8 h-8 grid place-items-center cursor-pointer hover:scale-110"
         @click="emits('addProblem')"
+      > -->
+      <span
+        role="button"
+        class="bg-white border border-black-3 p-1 rounded-full w-8 h-8 grid place-items-center cursor-pointer hover:scale-110"
+        @click="createProblemStore.addProblem()"
       >
         <img :src="plusPath" alt="아이템 추가하기" class="h-4 align-center" />
       </span>
     </p>
 
-    <section
+    <!-- <section
       v-for="(problem, idx) in props.problemList"
       :key="idx"
       @click="onClickProblem(idx)"
       :class="[
         'flex flex-col gap-3 p-2 rounded-lg font-medium cursor-pointer hover:scale-[102%]',
         targetProblemIdx == idx ? 'bg-black-5' : 'bg-white',
+        !problem.isValid && problem.visited
+          ? 'border border-red-1'
+          : 'border border-black-5',
+      ]"
+    > -->
+    <section
+      v-for="(problem, idx) in createdProblems.problemLists"
+      :key="idx"
+      @click="onClickProblem(idx)"
+      :class="[
+        'flex flex-col gap-3 p-2 rounded-lg font-medium cursor-pointer hover:scale-[102%]',
+        targetProblem.idx == idx ? 'bg-black-5' : 'bg-white',
         !problem.isValid && problem.visited
           ? 'border border-red-1'
           : 'border border-black-5',

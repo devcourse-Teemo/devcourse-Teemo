@@ -1,95 +1,156 @@
 <script setup>
-import { Button } from "primevue";
+import { Button, useToast } from "primevue";
 import { storeToRefs } from "pinia";
 import { watch, computed, onMounted } from "vue";
 import { useRoute } from "vue-router";
 import { useExamResultStore } from "@/store/ExamResultStore";
 import { useAuthStore } from "@/store/authStore";
+import Viewer from "@toast-ui/editor/dist/toastui-editor-viewer";
+import "@toast-ui/editor/dist/toastui-editor-viewer.css";
 
 const route = useRoute();
+const toast = useToast();
+
+// Pinia Store 설정
 const examResultStore = useExamResultStore();
 const authStore = useAuthStore();
+const {
+  fetchMyOption,
+  fetchProblems,
+  toggleAgainViewProblem,
+  checkAgainViewStatus,
+} = examResultStore;
+const {
+  currentProblem,
+  problems,
+  myOption,
+  status,
+  againViewProblems,
+  isFetchingProblems,
+} = storeToRefs(examResultStore);
+
 const testResultId = computed(() => route.params.examResultId);
-const currentUserId = computed(() => authStore.user?.id);
+const userId = computed(() => authStore.user?.id);
 
-const selectedMyOption = computed(() =>
-  myOption.value.find((item) => item.problem_id === currentProblem.value?.id),
-);
+// 계산된 값
+const selectedMyOption = computed(() => {
+  const problem = myOption.value.find(
+    (item) => item.problem_id === currentProblem.value?.id,
+  );
+  return problem ? problem.my_option : "";
+});
 
-const selectedStatus = computed(() =>
-  status.value.find((item) => item.problem_id === currentProblem.value?.id),
-);
+const selectedStatus = computed(() => {
+  if (!currentProblem.value) return null;
+  const statusForCurrentProblem = status.value.find(
+    (item) => item.problem_id === currentProblem.value.id,
+  );
+  return statusForCurrentProblem || null;
+});
 
-const { fetchProblems, fetchMyOption } = examResultStore;
-const { currentProblem, isFetchingProblems, problems, myOption, status } =
-  storeToRefs(examResultStore);
-
-const fetchData = async (id) => {
+// 초기 데이터 로드
+const loadInitialData = async () => {
+  if (isFetchingProblems.value) return;
   try {
-    if (!id || isFetchingProblems.value) return;
-    examResultStore.isFetchingProblems = true;
-    examResultStore.error = null;
-    await fetchProblems(id);
-
+    if (!userId.value || !testResultId.value) {
+      console.warn("유효하지 않은 userId 또는 testResultId");
+      return;
+    }
+    isFetchingProblems.value = true;
+    await fetchProblems(userId, testResultId);
+    // 첫 번째 문제를 기본 선택
     if (problems.value.length > 0 && !currentProblem.value) {
       examResultStore.selectProblem(problems.value[0]);
     }
   } catch (error) {
-    console.error("문제 불러오기 실패:", error);
-    examResultStore.error = error.message || "문제를 불러오는 데 실패했습니다.";
+    console.error("초기 데이터 로드 실패:", error);
+    toast.add({
+      severity: "error",
+      summary: "데이터 로드 실패",
+      detail: "문제 및 선택 데이터를 불러오는 데 실패했습니다.",
+      life: 3000,
+    });
   } finally {
-    examResultStore.isFetchingProblems = false;
+    isFetchingProblems.value = false;
   }
 };
 
-const fetchOptionData = async () => {
-  if (!problems.value || !problems.value.length === 0) {
-    console.warn("문제id 값을 못찾음");
+// 문제 상태 토글
+const toggleProblemStatus = async () => {
+  if (!currentProblem.value?.id || !userId.value) {
+    toast.add({
+      severity: "error",
+      summary: "오류 발생",
+      detail: "유효하지 않은 문제 또는 사용자 ID입니다.",
+      life: 3000,
+    });
     return;
   }
-  const selectedProblem = problems.value.find(
-    (problem) => problem.id === currentProblem.value?.id,
-  );
-  if (!selectedProblem) {
-    console.warn("현재 선택된 문제가 없습니다.");
-    return;
-  }
+
   try {
-    await fetchMyOption(currentUserId.value, testResultId.value);
+    await toggleAgainViewProblem(userId.value, currentProblem.value.id, toast);
   } catch (error) {
-    console.error("사용자 선택 데이터 가져오기 실패:", error);
+    console.error("문제 상태 토글 실패:", error);
   }
 };
 
-// 문제 변경 시 사용자 선택 데이터 로드
-watch(currentProblem, (newProblem) => {
-  if (newProblem && currentUserId.value) {
-    fetchOptionData();
-  }
-});
-
-// 시험 결과 ID 변경 시 문제 데이터 로드
+// 현재 문제 변경 시 상태 확인
 watch(
-  testResultId,
-  async (newId) => {
-    if (newId) {
-      await fetchData(newId);
-      if (currentProblem.value) {
-        fetchOptionData();
-      }
+  currentProblem,
+  async (newProblem) => {
+    if (!newProblem || !userId.value) {
+      console.warn("currentProblem이 없거나 userId가 유효하지 않습니다.");
+      return;
+    }
+    try {
+      await checkAgainViewStatus(userId.value, newProblem.id);
+    } catch (error) {
+      console.error("checkAgainViewStatus 실행 중 오류 발생:", error);
     }
   },
   { immediate: true },
 );
 
-// 초기 데이터 로드
+watch(
+  () => route.params.examResultId,
+  (newExamResultId) => {
+    if (newExamResultId) {
+      loadInitialData();
+      fetchMyOption(newExamResultId, userId.value);
+    }
+  },
+  { immediate: true },
+);
+
+let viewer, explanationViewer;
+
 onMounted(() => {
-  if (currentUserId.value && currentProblem.value) {
-    fetchOptionData();
-  } else {
-    console.warn("초기 데이터가 로드되지 않았습니다. Watch로 처리 중...");
-  }
+  viewer = new Viewer({
+    el: document.querySelector("#viewer"),
+    initialValue: currentProblem.value?.question || "",
+  });
+  explanationViewer = new Viewer({
+    el: document.querySelector("#explanationViewer"),
+    initialValue: currentProblem.value?.explanation || "",
+  });
 });
+
+watch(
+  () => currentProblem.value?.question,
+  (newQuestion) => {
+    if (viewer) {
+      viewer.setMarkdown(newQuestion || "");
+    }
+  },
+);
+watch(
+  () => currentProblem.value?.explanation,
+  (newExplanation) => {
+    if (explanationViewer) {
+      explanationViewer.setMarkdown(newExplanation || "");
+    }
+  },
+);
 </script>
 
 <template>
@@ -115,24 +176,22 @@ onMounted(() => {
           >
             <h2 class="text-xl font-bold">문제 {{ currentProblem.number }}</h2>
             <Button
-              label="다시 볼 문제"
+              :label="'다시 풀 문제'"
               icon="pi pi-flag"
               size="small"
               severity="secondary"
-              class="!bg-navy-4 !text-white"
-              aria-label="again-view-problem"
-              title="나중에 복습할 문제 표시"
+              :class="[
+                'text-sm',
+                againViewProblems.includes(currentProblem?.id)
+                  ? '!bg-orange-3 !text-orange-500'
+                  : 'text-white bg-navy-4',
+              ]"
+              @click="toggleProblemStatus"
             />
           </div>
 
-          <!-- question -->
-          <div class="text-gray-800 mb-6">
-            <p class="text-lg mb-4 font-medium">
-              {{ currentProblem.question }}
-            </p>
-          </div>
+          <div id="viewer" class="text-gray-700 min-h-4 mb-10 w-full"></div>
 
-          <!-- image -->
           <div v-if="currentProblem.image_src" class="flex justify-center mb-6">
             <img
               :src="currentProblem.image_src"
@@ -141,44 +200,75 @@ onMounted(() => {
               class="max-w-full h-auto rounded-lg shadow-md"
             />
           </div>
-
-          <!-- 객관식 선택지 -->
           <div
             v-if="currentProblem.problem_type === 'multiple_choice'"
-            class="mt-4"
+            class="space-y-4"
           >
-            <h3 class="font-bold text-lg mb-2">선택지</h3>
-            <ul>
+            <ol class="list-decimal text-gray-700">
               <li
-                v-for="(option, idx) in currentProblem.options"
-                :key="'option-' + currentProblem.id + '-' + idx"
-                class="text-gray-700 bg-gray-100 p-2 rounded-lg mb-2"
+                v-if="currentProblem.options[0]"
+                class="flex items-center gap-2 mb-8 last:mb-0"
               >
-                {{ idx + 1 }}. {{ option }}
+                <span
+                  class="font-medium text-lg rounded-full bg-black-6 w-8 h-8 item-middle"
+                  >1</span
+                >
+                <span>{{ currentProblem.options[0] }}</span>
               </li>
-            </ul>
+              <li
+                v-if="currentProblem.options[1]"
+                class="flex items-center gap-2 mb-8 last:mb-0"
+              >
+                <span
+                  class="font-medium text-lg rounded-full bg-black-6 w-8 h-8 item-middle"
+                  >2</span
+                >
+                <span>{{ currentProblem.options[1] }}</span>
+              </li>
+              <li
+                v-if="currentProblem.options[2]"
+                class="flex items-center gap-2 mb-8 last:mb-0"
+              >
+                <span
+                  class="font-medium text-lg rounded-full bg-black-6 w-8 h-8 item-middle"
+                  >3</span
+                >
+                <span>{{ currentProblem.options[2] }}</span>
+              </li>
+              <li
+                v-if="currentProblem.options[3]"
+                class="flex items-center gap-2 mb-8 last:mb-0"
+              >
+                <span
+                  class="font-medium text-lg rounded-full bg-black-6 w-8 h-8 item-middle"
+                  >4</span
+                >
+                <span>{{ currentProblem.options[3] }}</span>
+              </li>
+            </ol>
           </div>
 
-          <!-- 내 선택 -->
-          <div class="mb-6">
+          <div class="mt-8">
             <h3 class="font-bold text-lg mb-2">내 선택</h3>
             <div class="flex items-center gap-4 border-b pb-4">
               <template v-if="currentProblem">
                 <div
-                  class="w-8 h-8 flex items-center justify-center rounded-full bg-gray-200 text-black font-bold"
+                  class="font-medium w-8 h-8 flex items-center justify-center rounded-full bg-gray-200 text-black"
                 >
-                  {{ selectedMyOption.my_option }}
+                  {{ selectedMyOption }}
                 </div>
 
                 <span
-                  v-if="selectedStatus?.status === 'corrected'"
+                  v-if="selectedStatus && selectedStatus.status === 'corrected'"
                   class="text-green-500"
                 >
                   정답
                 </span>
                 <span
-                  v-else-if="selectedStatus?.status === 'wrong'"
-                  class="text-red-500"
+                  v-else-if="
+                    selectedStatus && selectedStatus.status === 'wrong'
+                  "
+                  class="text-[#F60505]"
                 >
                   오답
                 </span>
@@ -189,11 +279,9 @@ onMounted(() => {
             </div>
           </div>
 
-          <!-- 정답 -->
-          <div class="mb-6">
+          <div class="mt-4">
             <h3 class="font-bold text-lg mb-3">정답</h3>
             <div class="flex items-start gap-3">
-              <!-- 정답 번호 표시 -->
               <span
                 class="shrink-0 w-8 h-8 flex items-center justify-center rounded-full bg-orange-3 text-red-1 font-bold"
                 :class="{
@@ -204,7 +292,6 @@ onMounted(() => {
                 {{ currentProblem.answer }}
               </span>
 
-              <!-- 선택지 내용 -->
               <div class="flex-1">
                 <p class="text-gray-800 font-medium leading-relaxed">
                   {{ currentProblem.options[currentProblem.answer - 1] }}
@@ -213,15 +300,15 @@ onMounted(() => {
             </div>
           </div>
 
-          <!-- 풀이 섹션 -->
           <div
             v-if="currentProblem.explanation"
-            class="bg-gray-50 p-4 rounded-lg"
+            class="bg-gray-50 p-4 mt-4 rounded-lg"
           >
             <h3 class="font-bold text-lg mb-2 text-gray-700">상세 풀이</h3>
-            <p class="text-gray-600 leading-relaxed">
-              {{ currentProblem.explanation }}
-            </p>
+            <div
+              id="explanationViewer"
+              class="text-gray-600 leading-relaxed"
+            ></div>
           </div>
         </div>
       </div>
@@ -231,3 +318,26 @@ onMounted(() => {
     </template>
   </div>
 </template>
+
+<style scoped>
+/* 다시 풀 문제 활성 상태 */
+.again-view-active {
+  background-color: #f1a140 !important;
+  color: #ffffff !important;
+  border-color: transparent !important;
+}
+
+/* 다시 풀 문제 비활성 상태 */
+.again-view-inactive {
+  background-color: #8992b5 !important;
+  color: #ffffff !important;
+  border-color: transparent !important;
+}
+
+:deep(.toastui-editor-contents) {
+  font-family: "Pretendard";
+}
+:deep(p) {
+  font-size: 16px;
+}
+</style>

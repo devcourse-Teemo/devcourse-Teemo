@@ -11,11 +11,16 @@ import ProblemTable from "@/components/layout/ProblemTable.vue";
 import pen from "@/assets/icons/my-problem-sets-update/pen.svg";
 import share from "@/assets/icons/my-problem-sets-update/share.svg";
 import ConfirmModal from "@/components/layout/ConfirmModal.vue";
+import { useAuthStore } from "@/store/authStore";
+import { storeToRefs } from "pinia";
+import { formatDate } from "@/utils/formatDate";
 
 const toast = useToast();
 const route = useRoute();
 const router = useRouter();
 const confirm = useConfirm();
+const authStore = useAuthStore();
+const { user } = storeToRefs(authStore);
 
 const uid = ref(null);
 const title = ref(null);
@@ -91,6 +96,33 @@ const problemDelete = async () => {
 provide("problemDelete", problemDelete);
 
 const problemSetUpdate = async () => {
+  if (!title.value.trim() && !description.value.trim()) {
+    toast.add({
+      severity: "error",
+      summary: "문제집 수정 실패",
+      detail: "제목과 설명을 입력해주세요.",
+      life: 3000,
+    });
+    return;
+  }
+  if (!title.value.trim()) {
+    toast.add({
+      severity: "error",
+      summary: "문제집 수정 실패",
+      detail: "제목을 입력해주세요.",
+      life: 3000,
+    });
+    return;
+  }
+  if (!description.value.trim()) {
+    toast.add({
+      severity: "error",
+      summary: "문제집 수정 실패",
+      detail: "설명을 입력해주세요.",
+      life: 3000,
+    });
+    return;
+  }
   await workbookAPI.update(
     {
       title: title.value,
@@ -99,7 +131,7 @@ const problemSetUpdate = async () => {
     },
     route.params.problemSetId,
   );
-  router.push(`/problem-set-board-detail/${route.params.problemSetId}`);
+  router.push(`/problem-set-board/${route.params.problemSetId}`);
 };
 
 const workbookProblemAdd = async () => {
@@ -111,6 +143,8 @@ const workbookProblemAdd = async () => {
   }));
   await workbookAPI.workbookProblemAdd(workbookProblem.value);
   workbookProblemDataUpdate();
+  addedProblems.value = [];
+  myProblemsDataUpdate();
 };
 
 const workbookProblemDataUpdate = async () => {
@@ -121,7 +155,7 @@ const workbookProblemDataUpdate = async () => {
 };
 
 const myProblemsDataUpdate = async () => {
-  const myProblemsData = await problemAPI.getAllByUserId(uid.value);
+  const myProblemsData = await problemAPI.getAll();
 
   const filteredProblems = myProblemsData.filter(
     (problem) =>
@@ -133,6 +167,35 @@ const myProblemsDataUpdate = async () => {
   myProblems.value = filteredProblems;
 };
 provide("myProblemsDataUpdate", myProblemsDataUpdate);
+
+const search = async (keyword, startDate, endDate, sort, status) => {
+  const newProblems = await problemAPI.search(
+    user.value.id,
+    keyword,
+    startDate ? new Date(startDate).toISOString() : null,
+    endDate ? new Date(endDate).toISOString() : null,
+    status,
+  );
+
+  myProblems.value = newProblems.filter(
+    (problem) =>
+      !problems.value.some(
+        (workbookProblem) => workbookProblem.id === problem.id,
+      ),
+  );
+
+  router.replace({
+    query: {
+      ...route.query,
+      keyword,
+      startDate: formatDate(startDate),
+      endDate: formatDate(endDate),
+      status,
+      sort,
+      page: 1,
+    },
+  });
+};
 
 onMounted(async () => {
   const workbookData = await workbookAPI.getOne(route.params.problemSetId);
@@ -149,7 +212,7 @@ onMounted(async () => {
   const userInfo = await authAPI.getCurrentUser();
   uid.value = userInfo.id;
 
-  const myProblemsData = await problemAPI.getAllByUserId(userInfo.id);
+  const myProblemsData = await problemAPI.getAll();
 
   const filteredProblems = myProblemsData.filter(
     (problem) =>
@@ -220,6 +283,7 @@ onMounted(async () => {
     @added-problem-minus="addedProblemDelete"
     :workbookId="route.params.problemSetId"
     :showStatus="false"
+    :show-my-problem="false"
   />
 
   <Dialog
@@ -230,13 +294,16 @@ onMounted(async () => {
   >
     <div class="w-[1100px] px-[82px]">
       <div class="text-[36px] h-[54px] font-bold my-8">문제 추가하기</div>
-      <Search :show-status="true" class="my-8" />
+      <Search @search="search" :show-status="true" class="my-8" />
       <ProblemTable
         :problems="myProblems"
         :showCheckbox="false"
         :showCategory="false"
         :showPlus="true"
         :showSelect="false"
+        :show-my-problem="false"
+        :show-problem="false"
+        :new-tab="true"
       />
       <div class="my-7">
         <div class="text-[20px] mb-2 font-semibold">추가된 문제</div>
@@ -248,6 +315,8 @@ onMounted(async () => {
           :showMinus="true"
           :showSelect="false"
           :showCount="false"
+          :show-my-problem="false"
+          :new-tab="true"
         />
       </div>
       <div class="flex justify-center">

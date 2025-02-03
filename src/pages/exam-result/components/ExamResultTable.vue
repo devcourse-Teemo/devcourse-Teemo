@@ -1,44 +1,44 @@
 <script setup>
-import { computed, watch, onUnmounted } from "vue";
+import { computed, watch } from "vue";
 import { storeToRefs } from "pinia";
 import { useExamResultStore } from "@/store/ExamResultStore";
-import { useRoute } from "vue-router";
+import { useAuthStore } from "@/store/authStore";
 
 const examResultStore = useExamResultStore();
-const route = useRoute();
-const testResultId = computed(() => route.params.examResultId);
+const authStore = useAuthStore();
 
-const { tableData, isFetchingProblems, problems } =
-  storeToRefs(examResultStore);
-const { selectProblem, toggleFlag, fetchProblems } = examResultStore;
+const userId = computed(() => authStore.user?.id);
+const { tableData, currentProblem, status } = storeToRefs(examResultStore);
+const { selectProblem, checkAgainViewStatus } = examResultStore;
 
-let abortController = new AbortController();
-onUnmounted(() => abortController.abort());
-
-const loadProblems = async (id) => {
+// 문제 선택 핸들러
+const handleSelectProblem = async (cell) => {
+  if (!cell || !cell.id) return;
   try {
-    if (!id || isFetchingProblems.value) return;
-    abortController.abort();
-    abortController = new AbortController();
-    await fetchProblems(id, { signal: abortController.signal });
+    await selectProblem(cell.id, userId.value);
   } catch (error) {
-    if (error.name !== "AbortError") {
-      examResultStore.error = error.message;
-      console.error("Load error:", error);
-    }
+    console.error("handleSelectProblem 오류:", error);
   }
 };
 
 watch(
-  testResultId,
-  (newId, oldId) => {
-    if (newId !== oldId) loadProblems(newId);
+  currentProblem,
+  async (newProblem) => {
+    if (!newProblem) {
+      console.warn("currentProblem이 설정되지 않았습니다.");
+      examResultStore.currentProblem = null;
+      examResultStore.againViewProblems = [];
+      return;
+    }
+
+    try {
+      await checkAgainViewStatus(userId.value, newProblem.id);
+    } catch (error) {
+      console.error("currentProblem 상태 업데이트 중 오류:", error);
+    }
   },
   { immediate: true },
 );
-onUnmounted(() => {
-  examResultStore.$reset(); // Store 상태 초기화
-});
 </script>
 
 <template>
@@ -57,29 +57,39 @@ onUnmounted(() => {
                 v-for="(cell, colIndex) in row"
                 :key="'number-cell-' + colIndex"
                 class="cell problem-cell"
-                :class="{
-                  highlighted: cell === examResultStore.currentProblem,
-                }"
-                @click="selectProblem(cell)"
+                :class="{ highlighted: cell.id === currentProblem?.id }"
+                @click="handleSelectProblem(cell)"
               >
                 <button class="w-full py-2">
                   {{ cell.number }}
                 </button>
               </td>
             </tr>
-            <!-- 플래그 행 -->
+            <!-- 정답 여부 행 -->
             <tr>
               <td
                 v-for="(cell, colIndex) in row"
-                :key="'flag-cell-' + colIndex"
-                class="cell flag-cell"
-                @click="toggleFlag(cell)"
+                :key="'status-cell-' + colIndex"
+                class="cell flag-cell text-center font-bold"
               >
-                <i
-                  v-if="cell.flagged"
-                  class="pi pi-flag"
-                  style="color: blue; cursor: pointer"
-                ></i>
+                <span
+                  v-if="
+                    status.find((s) => s.problem_id === cell.id)?.status ===
+                    'corrected'
+                  "
+                  class="text-green-500"
+                >
+                  O
+                </span>
+                <span
+                  v-else-if="
+                    status.find((s) => s.problem_id === cell.id)?.status ===
+                    'wrong'
+                  "
+                  class="text-[#F60505]"
+                >
+                  X
+                </span>
               </td>
             </tr>
           </template>
@@ -101,6 +111,7 @@ onUnmounted(() => {
 
 /* 셀 스타일 */
 .cell {
+  cursor: pointer;
   width: 10%; /* 셀 너비 */
   height: 50px; /* 셀 높이 */
   text-align: center;
@@ -120,11 +131,15 @@ onUnmounted(() => {
 
 /* 강조된 셀 */
 .highlighted {
-  background-color: #f0f0f0;
-  color: #e63946;
+  background-color: #f6c085;
+  color: #f60505;
   font-weight: bold;
 }
 
+/* 셀에 마우스 오버 스타일 */
+.cell:hover {
+  background-color: #e5e4e6;
+}
 /* 버튼 스타일 */
 button {
   background: none;

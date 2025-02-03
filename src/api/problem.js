@@ -1,6 +1,16 @@
 import { useAuthStore } from "@/store/authStore.js";
 import { supabase } from "./index.js";
 
+const getAll = async () => {
+  try {
+    const { data, error } = await supabase.from("problem").select("*");
+    if (error) throw error;
+    return data;
+  } catch (error) {
+    console.error(error);
+  }
+};
+
 /**
  * @description 게시판에서 사용되는 API
  * @param {*} userId
@@ -27,7 +37,8 @@ const getAllByUserId = async (userId) => {
   try {
     const { data, error } = await supabase
       .from("problem")
-      .select(`
+      .select(
+        `
         *,
         likes: problem_like(count),
         history:problem_history(
@@ -35,20 +46,21 @@ const getAllByUserId = async (userId) => {
           created_at,
           uid
         )
-      `)
+      `,
+      )
       .eq("uid", userId);
 
     if (error) throw error;
 
-    const processedData = data.map(problem => ({
+    const processedData = data.map((problem) => ({
       ...problem,
       likes: problem.likes[0]?.count || 0,
-      latest_status: problem.history
-        ?.filter(h => h.uid === userId)
-        .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))[0]?.status || 'none'
+      latest_status:
+        problem.history
+          ?.filter((h) => h.uid === userId)
+          .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))[0]
+          ?.status || "none",
     }));
-
-    console.log('처리된 데이터:', processedData);
 
     return processedData;
   } catch (error) {
@@ -93,7 +105,6 @@ const search = async (userId, keyword, startDate, endDate, status) => {
       end_date: endDate,
       status,
     });
-    console.log(data);
 
     if (error) throw error;
     return data;
@@ -121,7 +132,6 @@ const searchForUser = async (userId, keyword, startDate, endDate, status) => {
       end_date: endDate,
       status,
     });
-    console.log(data);
 
     if (error) throw error;
     return data;
@@ -154,19 +164,17 @@ const add = async (workbook_id, body) => {
       if (!option_four) throw new Error(`${title}: 4번 보기가 비어있습니다.`);
     }
 
-    const { user } = useAuthStore();
     const newBody = { ...body };
-    const created_at = Date.now();
-    console.log(newBody);
     const { data, error } = await supabase
       .from("problem")
       .insert([newBody])
       .select();
 
-    console.log(data, error);
-    await supabase
-      .from("workbook_problem")
-      .insert([{ workbook_id, problem_id: data[0].id }]);
+    if (workbook_id) {
+      await supabase
+        .from("workbook_problem")
+        .insert([{ workbook_id, problem_id: data[0].id }]);
+    }
 
     if (error) throw error;
     return data;
@@ -233,12 +241,10 @@ const addMultiple = async (workbook_id, problemIds) => {
     if (error) throw new Error(`데이터 삽입 중 오류 발생: ${error.message}`);
 
     // 추가된 행의 개수 계산
-    const existingSet = new Set(
-      workbookProblems.map((wp) => `${wp.workbook_id}-${wp.problem_id}`),
+    const insertedData = data.filter(
+      (item) => item.created_at === item.updated_at,
     );
-    const insertedCount = data.filter(
-      (wp) => !existingSet.has(`${wp.workbook_id}-${wp.problem_id}`),
-    ).length;
+    const insertedCount = insertedData.length;
     return { data, insertedCount };
   } catch (error) {
     console.error(error);
@@ -349,7 +355,8 @@ const getUserSharedProblems = async (uid) => {
   try {
     const { data, error } = await supabase
       .from("shared_problem")
-      .select(`
+      .select(
+        `
         problem:problem_id (
           id,
           question,
@@ -375,22 +382,23 @@ const getUserSharedProblems = async (uid) => {
             uid
           )
         )
-      `)
+      `,
+      )
       .eq("uid", uid);
 
     if (error) throw error;
 
-    const processedData = data.map(item => ({
+    const processedData = data.map((item) => ({
       ...item.problem,
       likes: [{ count: item.problem.likes[0]?.count || 0 }],
-      latest_status: item.problem.history
-        ?.filter(h => h.uid === uid)
-        .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))[0]?.status || 'none'
+      latest_status:
+        item.problem.history
+          ?.filter((h) => h.uid === uid)
+          .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))[0]
+          ?.status || "none",
     }));
 
-    console.log('처리된 공유 문제 데이터:', processedData);
     return processedData;
-
   } catch (error) {
     console.error("사용자의 공유된 문제를 가져오는 중 오류 발생:", error);
     return [];
@@ -465,7 +473,6 @@ const getRandom = async () => {
 
     if (error) throw new Error(error);
 
-    console.log("Fetched Random Problem:", data);
     return data.id;
   } catch (error) {
     console.error("Error fetching random problem:", error);
@@ -474,6 +481,7 @@ const getRandom = async () => {
 };
 
 export const problemAPI = {
+  getAll,
   getAllShared,
   getAllByUserId,
   getAllSharedByUserId,

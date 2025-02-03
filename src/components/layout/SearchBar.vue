@@ -33,7 +33,7 @@ watch(() => props.modelValue, (newValue) => {
 </script>
 
 <template>
-  <div class="relative flex items-center justify-between bg-beige-2 rounded-2xl h-12 py-4 px-3 border border-black-4">
+  <div class="relative flex items-center justify-between bg-beige-2 rounded-xl h-12 py-4 px-3 border border-black-4">
     <input
       v-if="!showChip"
       v-model="searchTerm"
@@ -49,7 +49,7 @@ watch(() => props.modelValue, (newValue) => {
       @remove="removeChip"
       class="flex-1 !w-fit"
     />
-    <button @click="handleSearch" class="bg-transparent ml-2">
+    <button @click="handleSearch" class="bg-transparent ml-2 item-middle">
       <img :src="searchIcon" alt="검색 아이콘" />
     </button>
   </div>

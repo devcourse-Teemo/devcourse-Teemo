@@ -5,11 +5,9 @@ import { useAuthStore } from "@/store/authStore";
 import { useToast } from "primevue/usetoast";
 import { pointAPI } from "@/api/point";
 import { getCurrentGradeInfo } from "@/utils/getCurrentGradeInfo";
-import { problemAPI } from "@/api/problem";
 import { problemLikeAPI } from "@/api/problemLike";
 import { supabase } from "@/api/index.js";
 import { RouterLink } from "vue-router";
-import shareIcon from "@/assets/icons/problem-board/fi-rr-share.svg";
 import thumbsUpIcon from "@/assets/icons/problem-board/fi-rr-thumbs-up.svg";
 import defaultProfileIMG from "@/assets/default-profile-image.svg";
 
@@ -43,7 +41,6 @@ const authStore = useAuthStore();
 
 const hasLiked = ref(false);
 const likeCount = ref(0);
-const isBookmarked = ref(false);
 
 const getCurrentUserId = async () => {
   try {
@@ -81,7 +78,7 @@ const fetchUserGrade = async () => {
   try {
     if (props.author?.id) {
       const pointData = await pointAPI.getAll(props.author.id);
-      
+
       if (pointData && pointData.length > 0 && pointData[0].total) {
         const totalPoints = pointData[0].total;
         const gradeInfo = getCurrentGradeInfo(totalPoints);
@@ -111,22 +108,6 @@ const loadLikeStatus = async () => {
   }
 };
 
-// 북마크 상태 로드
-const loadBookmarkStatus = async () => {
-  const currentUserId = await getCurrentUserId();
-  if (!props.problem?.id || !currentUserId) return;
-
-  try {
-    const status = await problemAPI.checkIsShared(
-      currentUserId,
-      props.problem.id,
-    );
-    isBookmarked.value = status;
-  } catch (error) {
-    console.error("북마크 상태 로딩 실패:", error);
-  }
-};
-
 // 좋아요 토글 핸들러
 const handleToggleLike = async () => {
   const currentUserId = await getCurrentUserId();
@@ -149,49 +130,8 @@ const handleToggleLike = async () => {
   }
 };
 
-// 북마크 토글 핸들러
-const handleToggleBookmark = async () => {
-  const currentUserId = await getCurrentUserId();
-  if (!currentUserId) {
-    toast.add({
-      severity: "warn",
-      summary: "로그인 필요",
-      detail: "로그인 후 이용해주세요.",
-      life: 3000,
-    });
-    return;
-  }
-
-  try {
-    if (isBookmarked.value) {
-      await problemAPI.removeShare(props.problem.id);
-    } else {
-      await problemAPI.addShare(props.problem.id, currentUserId);
-    }
-    isBookmarked.value = !isBookmarked.value;
-
-    toast.add({
-      severity: isBookmarked.value ? "success" : "info",
-      summary: isBookmarked.value ? "북마크 추가" : "북마크 해제",
-      detail: isBookmarked.value
-        ? "북마크에 추가되었습니다."
-        : "북마크가 해제되었습니다.",
-      life: 3000,
-    });
-  } catch (error) {
-    console.error("북마크 처리 실패:", error);
-    toast.add({
-      severity: "error",
-      summary: "처리 실패",
-      detail: "북마크 처리 중 오류가 발생했습니다.",
-      life: 3000,
-    });
-  }
-};
-
 watchEffect(() => {
   loadLikeStatus();
-  loadBookmarkStatus();
   fetchUserGrade();
   document.addEventListener("click", closeMenu);
 });
@@ -214,7 +154,7 @@ const routeConfig = computed(() => {
     <RouterLink
       v-if="routeConfig"
       :to="routeConfig"
-      class="flex gap-2 items-center"
+      class="inline-flex gap-2 items-center w-fit"
     >
       <Avatar
         :image="author?.avatar_url"
@@ -238,20 +178,12 @@ const routeConfig = computed(() => {
     <div class="flex items-center gap-4 mb-10">
       <div class="flex-1">
         <h1 class="text-4xl font-bold mb-4">{{ problem?.title }}</h1>
-        <div class="flex items-center gap-2 text-sm text-gray-500">
+        <div class="flex items-center gap-4 text-sm text-gray-500">
           <span class="bg-gray-100 px-2 py-1 rounded">{{
             problem?.category?.name
           }}</span>
-          <div class="flex items-center gap-1">
-            <img :src="shareIcon" alt="공유 아이콘" class="w-4 h-4" />
-            <span>{{ problem?.shared ? "공개됨" : "미공개" }}</span>
-          </div>
-          <button
-            @click="handleToggleLike"
+          <div
             class="flex items-center gap-1 px-2 py-1 rounded-full transition"
-            :class="
-              hasLiked ? 'bg-orange-100 text-orange-1' : 'hover:bg-gray-100'
-            "
           >
             <img
               :src="thumbsUpIcon"
@@ -260,19 +192,7 @@ const routeConfig = computed(() => {
               :class="{ 'opacity-50': !hasLiked }"
             />
             <span>{{ likeCount }}</span>
-          </button>
-          <button
-            aria-label="북마크 버튼"
-            v-if="!isAuthor"
-            @click="handleToggleBookmark"
-            class="flex items-center gap-1 px-2.5 py-1.5 rounded-full hover:bg-gray-100 transition"
-            :class="{ 'text-orange-1 bg-orange-100': isBookmarked }"
-          >
-            <i
-              class="pi"
-              :class="isBookmarked ? 'pi-bookmark-fill' : 'pi-bookmark'"
-            ></i>
-          </button>
+          </div>
         </div>
       </div>
 
@@ -284,6 +204,21 @@ const routeConfig = computed(() => {
           aria-label="더보기"
         >
           <i class="pi pi-ellipsis-h"></i>
+        </button>
+        <button
+          v-else
+          @click="handleToggleLike"
+          class="item-middle gap-1 px-2 py-2 rounded-full transition w-14 h-14"
+          :class="
+            hasLiked ? 'bg-orange-100 text-orange-1' : 'hover:bg-gray-100'
+          "
+        >
+          <img
+            :src="thumbsUpIcon"
+            alt="좋아요 아이콘"
+            class="w-10 h-10"
+            :class="{ 'opacity-50': !hasLiked }"
+          />
         </button>
 
         <div

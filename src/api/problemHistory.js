@@ -22,42 +22,44 @@ const getUid = async (uid) => {
 };
 
 //내가 고른 선택지
-const getMyOption = async (userId, testCenterId) => {
-  try {
-    const { data, error } = await supabase
-      .from("problem_history")
-      .select(
-        `
-        uid,
-        problem_id,
-        test_center_id,
-        status,
-        my_option,
-        created_at
-      `,
-      )
-      .eq("uid", userId)
-      .order("created_at", { ascending: false }); // 최신 데이터 우선
 
-    if (error) {
-      console.error("Supabase 쿼리 오류:", error.message);
-      return [];
-    }
+const getTestCenterId = async (testResultId) => {
+  const query = supabase
+    .from("test_result")
+    .select("test_center_id, created_at")
+    .eq("id", testResultId)
+    .single();
 
-    if (!data || data.length === 0) {
-      console.warn("조건에 맞는 데이터가 없습니다.");
-      return [];
-    }
+  const { data, error } = await query;
 
-    return data;
-  } catch (err) {
-    console.error("getMyOption 오류:", err.message);
-    return [];
+  if (error) {
+    console.error("getTestCenterId 에러:", error);
+    return null;
   }
+
+  return data;
+};
+
+const getProblemHistory = async (testCenterId, userId) => {
+  const query = supabase
+    .from("problem_history")
+    .select("problem_id, my_option, status")
+    .eq("test_center_id", testCenterId)
+    .eq("uid", userId)
+    .order("problem_id", { ascending: true });
+
+  const { data, error } = await query;
+
+  if (error) {
+    console.error("getProblemHistory 에러:", error);
+    return null;
+  }
+  return data;
 };
 
 export const problemHistoryAPI = {
   add,
   getUid,
-  getMyOption,
+  getTestCenterId,
+  getProblemHistory,
 };

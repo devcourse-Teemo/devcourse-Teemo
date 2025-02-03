@@ -1,21 +1,25 @@
 <script setup>
-import { ref, onMounted, onBeforeUnmount } from "vue";
+import { ref, onMounted } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { Dialog, Button } from "primevue";
 import { useProblemStore } from "@/store/problemStore";
 import { useAuthStore } from "@/store/authStore";
 import { problemLikeAPI } from "@/api/problemLike";
 import { commentAPI } from "@/api/comment";
+import { useToast } from "primevue/usetoast";
 
 import ProblemHeader from "./components/ProblemHeader.vue";
 import ProblemContent from "./components/ProblemContent.vue";
 import ProblemSolution from "./components/ProblemSolution.vue";
 import CommentList from "./components/CommentList.vue";
+import { problemAPI } from "@/api/problem";
+import { ConfirmDialog } from "primevue";
 
 const route = useRoute();
 const router = useRouter();
 const problemStore = useProblemStore();
 const authStore = useAuthStore();
+const toast = useToast();
 
 // 상태 관리
 const showConfirmDialog = ref(false);
@@ -24,18 +28,18 @@ const likeCount = ref(0);
 
 // 댓글 관련 상태
 const comments = ref([]);
+const isLoadingComments = ref(false);
 const currentPage = ref(1);
 const totalPages = ref(0);
-const isLoadingComments = ref(false);
 const commentValue = ref("");
+const commentCount = ref(0);
 
 // 댓글 불러오기
-const loadComments = async (page = 1) => {
+const fetchComments = async (page = currentPage.value) => {
   try {
     isLoadingComments.value = true;
     const response = await commentAPI.getComments({
       problem_id: parseInt(route.params.problemId),
-      workbook_id: problemStore.problem.workbook_id,
       page,
       pageSize: 10,
     });
@@ -43,6 +47,7 @@ const loadComments = async (page = 1) => {
     comments.value = response.data;
     currentPage.value = response.currentPage;
     totalPages.value = response.totalPages;
+    commentCount.value = response.count; // 전체 댓글 수 저장
   } catch (error) {
     console.error("댓글 로딩 실패:", error);
   } finally {
@@ -53,42 +58,35 @@ const loadComments = async (page = 1) => {
 // 댓글 작성
 const handleSubmitComment = async () => {
   if (!commentValue.value.trim()) return;
-  if (!authStore.user?.id) {
-    alert("로그인이 필요한 기능입니다.");
-    return;
-  }
 
   try {
     await commentAPI.createComment({
       problem_id: parseInt(route.params.problemId),
-      workbook_id: problemStore.problem.workbook_id, // workbook_id 추가
       content: commentValue.value,
       uid: authStore.user.id,
     });
 
     commentValue.value = "";
-    await loadComments(currentPage.value); // 현재 페이지 리로드
+    await fetchComments(currentPage.value); // 현재 페이지 새로고침
+    toast.add({
+      severity: "success",
+      summary: "댓글 작성 완료",
+      detail: "댓글이 성공적으로 등록되었습니다.",
+      life: 3000,
+    });
   } catch (error) {
     console.error("댓글 작성 실패:", error);
+    toast.add({
+      severity: "error",
+      detail: "댓글 작성 중 오류가 발생했습니다.",
+      life: 3000,
+    });
   }
 };
 
 // 페이지 변경 핸들러
 const handlePageChange = (page) => {
-  loadComments(page + 1);
-};
-
-// 좋아요 상태 확인
-const checkLikeStatus = async () => {
-  try {
-    if (!authStore.user?.id) return;
-    const response = await problemLikeAPI.getUid(authStore.user.id);
-    hasLiked.value = response?.data?.some(
-      (like) => like.problem_id === parseInt(route.params.problemId),
-    );
-  } catch (error) {
-    console.error("좋아요 상태 확인 실패:", error);
-  }
+  fetchComments(page + 1);
 };
 
 // 좋아요 토글
@@ -126,11 +124,34 @@ const handleMenuAction = (action) => {
   }
 };
 
+const handleDelete = async () => {
+  try {
+    await problemAPI.deleteOne(route.params.problemId);
+    toast.add({
+      severity: "success",
+      summary: "삭제 완료",
+      detail: "문제가 삭제되었습니다.",
+      life: 3000,
+    });
+    router.push("/problem-board"); // 변경된 리디렉션 경로
+  } catch (error) {
+    console.error("문제 삭제 실패:", error);
+    toast.add({
+      severity: "error",
+      summary: "오류",
+      detail: "문제 삭제 중 오류가 발생했습니다.",
+      life: 3000,
+    });
+  } finally {
+    showConfirmDialog.value = false;
+  }
+};
+
+// 초기 데이터 로딩
 onMounted(async () => {
   await Promise.all([
     problemStore.loadProblem(route.params.problemId),
-    checkLikeStatus(),
-    loadComments(),
+    fetchComments(1),
   ]);
 });
 </script>
@@ -159,11 +180,12 @@ onMounted(async () => {
       :isLoading="isLoadingComments"
       :currentPage="currentPage"
       :totalPages="totalPages"
-      v-model:value="commentValue"
+      :totalComments="commentCount"
       :problemId="route.params.problemId"
-      :workbookId="problemStore.problem.workbook_id"
+      v-model:value="commentValue"
       @submit-comment="handleSubmitComment"
       @page-change="handlePageChange"
+      @comment-change="fetchComments"
     />
 
     <!-- 삭제 확인 다이얼로그 -->
@@ -179,12 +201,9 @@ onMounted(async () => {
           severity="secondary"
           @click="showConfirmDialog = false"
         />
-        <Button
-          label="삭제"
-          severity="danger"
-          @click="showConfirmDialog = false"
-        />
+        <Button label="삭제" severity="danger" @click="handleDelete" />
       </template>
     </Dialog>
+    <ConfirmDialog />
   </div>
 </template>

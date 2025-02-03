@@ -1,7 +1,7 @@
 <script setup>
 import { followAPI } from "@/api/follow";
 import { useRoute } from "vue-router";
-import { ref, onMounted, watch, watchEffect } from "vue";
+import { ref, watchEffect } from "vue";
 import { Button, useToast } from "primevue";
 import { useAuthStore } from "@/store/authStore";
 import { storeToRefs } from "pinia";

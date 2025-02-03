@@ -6,71 +6,27 @@ import {
   ref,
   onBeforeMount,
   computed,
-  onBeforeUnmount,
   watchEffect,
   watch,
-  defineExpose,
   toRaw,
 } from "vue";
-import {
-  Listbox,
-  Button,
-  ToggleSwitch,
-  MultiSelect,
-  InputText,
-  StyleClass,
-  SelectButton,
-} from "primevue";
+import { Button, MultiSelect, InputText, SelectButton } from "primevue";
 
 import Editor from "@toast-ui/editor";
 import "@toast-ui/editor/dist/toastui-editor.css";
 import { storageAPI } from "@/api/storage";
-import { HtmlGenerator, parse } from "latexjs";
 import { categoryAPI } from "@/api/category";
+import { useCreateProblemStore } from "@/store/createProblemStore";
+import { storeToRefs } from "pinia";
 
-const props = defineProps({
-  problemIdx: {
-    type: Number,
-  },
-  problemContent: {
-    type: {
-      title: String,
-      question: String,
-      answer: String,
-      explanation: String,
-      origin_source: String,
-      problem_type: String,
-      category: Array,
-      image_src: String,
-      option_one: String,
-      option_two: String,
-      option_three: String,
-      option_four: String,
-      shared: Boolean,
-    },
-    default: () => ({
-      title: "",
-      question: "",
-      answer: "",
-      explanation: "",
-      origin_source: "",
-      problem_type: "",
-      category: [],
-      image_src: "",
-      option_one: "",
-      option_two: "",
-      option_three: "",
-      option_four: "",
-      shared: false,
-    }),
-  },
-});
+const createProblemStore = useCreateProblemStore();
+const { createdProblems, targetProblem } = storeToRefs(createProblemStore);
 
-const emits = defineEmits(["updateListItem", "deleteProblem", "submitProblem"]);
+const emits = defineEmits(["deleteProblem"]);
 
 const setType = (type) => {
   localProblem.type = type;
-  emits("updateListItem", "TYPE", type);
+  createProblemStore.updateListItem("TYPE", type);
 };
 const PROBLEM_TYPES = ["4지선다", "O/X"];
 // 카테고리
@@ -78,11 +34,11 @@ const PROBLEM_TYPES = ["4지선다", "O/X"];
 const category = reactive([]);
 
 const localProblem = reactive({
-  ...props.problemContent,
+  ...createdProblems.value.problemLists[targetProblem.value.idx],
 });
 
 const currentIdx = computed(() => {
-  return props.problemIdx;
+  return targetProblem.value.idx;
 });
 
 // 에디터 옵션
@@ -95,7 +51,6 @@ let explanationEditorInstance = null;
 
 // 카테고리 생성용
 const doesCategoryExist = computed(() => {
-  console.log(filteredCategory.value);
   return JSON.stringify(category).indexOf(`${filteredCategory.value}`) === -1
     ? false
     : true;
@@ -115,13 +70,10 @@ const createCategory = async () => {
     name: filteredCategory.value.trim(),
   });
 
-  console.log(newCategoryData);
   category.push(...newCategoryData);
   localProblem.category = [...newCategoryData];
 
   filteredCategory.value = "";
-
-  console.log("새로운 카테고리가 생성되고 선택되었습니다:", newCategoryData);
 };
 
 watchEffect(() => {
@@ -129,15 +81,14 @@ watchEffect(() => {
   if (questionEditor.value && !questionEditorInstance) {
     questionEditorInstance = new Editor({
       el: questionEditor.value,
-      height: "200px",
+      height: "300px",
       initialEditType: "wysiwyg",
       previewStyle: "vertical",
       toolbarItems: [
         ["heading", "bold", "italic", "strike"],
         ["hr", "quote"],
-        ["ul", "ol", "task", "indent", "outdent"],
-        ["table", "image", "link"],
-        ["code", "codeblock"],
+        ["ul", "ol"],
+        ["table", "image"],
       ],
       events: {
         change: () => {
@@ -196,6 +147,12 @@ watchEffect(() => {
       height: "200px",
       initialEditType: "wysiwyg",
       previewStyle: "vertical",
+      toolbarItems: [
+        ["heading", "bold", "italic", "strike"],
+        ["hr", "quote"],
+        ["ul", "ol"],
+        ["table", "image"],
+      ],
       events: {
         change: () => {
           const value = explanationEditorInstance.getMarkdown();
@@ -241,46 +198,47 @@ onBeforeMount(async () => {
 
 const updateValidity = () => {
   localProblem.validity.category = localProblem.category?.length > 0;
-  localProblem.validity.title = localProblem.title?.length > 0 ? true : false;
-  localProblem.validity.question =
-    localProblem.question?.length > 0 ? true : false;
-  localProblem.validity.answer = localProblem.answer?.length > 0 ? true : false;
-  localProblem.validity.origin_source =
-    localProblem.origin_source?.length > 0 ? true : false;
-};
+  localProblem.validity.title = localProblem.title?.length > 0;
+  localProblem.validity.question = localProblem.question?.length > 0;
+  localProblem.validity.answer = localProblem.answer?.length > 0;
+  localProblem.validity.origin_source = localProblem.origin_source?.length > 0;
 
-// Call updateValidity inside watchEffect so Vue tracks dependencies correctly
-watchEffect(() => {
-  updateValidity();
-});
+  if (localProblem.type === "4지선다") {
+    localProblem.validity.option_one = localProblem.option_one?.length > 0;
+    localProblem.validity.option_two = localProblem.option_two?.length > 0;
+    localProblem.validity.option_three = localProblem.option_three?.length > 0;
+    localProblem.validity.option_four = localProblem.option_four?.length > 0;
+  } else {
+    delete localProblem.validity.option_one;
+    delete localProblem.validity.option_two;
+    delete localProblem.validity.option_three;
+    delete localProblem.validity.option_four;
+  }
 
-const submitProblem = () => {
-  const categoryRaw = toRaw(localProblem.category);
-  updateValidity();
   localProblem.isValid = Object.values(localProblem.validity).every(Boolean);
-  localProblem.visited = true;
-  emits("submitProblem", currentIdx.value, {
-    ...localProblem,
-    category: categoryRaw,
-  });
-  console.log(localProblem);
 };
 
-defineExpose({
-  submitProblem,
+watch(localProblem, () => {
+  updateValidity();
 });
 
 // 문제 변경시 제출, 업데이트
-onBeforeUnmount(() => {
-  submitProblem();
-});
+watch(
+  () => localProblem,
+  (newVal) => {
+    if (currentIdx.value !== -1) {
+      createProblemStore.submitProblem(currentIdx.value, toRaw(newVal));
+    }
+  },
+  { deep: true }, // 내부 객체 변경까지 감지
+);
 </script>
 
 <template>
   <main class="flex flex-col gap-4 flex-grow">
     <article
       class="flex items-top flex-grow pl-4 pr-10 py-4 gap-3"
-      v-if="props.problemIdx !== -1"
+      v-if="currentIdx !== -1"
     >
       <img
         :src="deletePath"
@@ -340,13 +298,6 @@ onBeforeUnmount(() => {
               </div>
             </template>
           </MultiSelect>
-
-          <label for="shared" class="mr-2"> 공개 여부 </label>
-          <ToggleSwitch
-            v-model="localProblem.shared"
-            name="shared"
-            class="align-middle"
-          />
         </fieldset>
 
         <fieldset class="addDivider flex flex-col gap-4 mb-4">
@@ -360,7 +311,9 @@ onBeforeUnmount(() => {
             class="md:h-10 w-full"
             placeholder="문제의 제목을 작성해 주세요."
             :invalid="localProblem.title == ''"
-            @change="(e) => emits('updateListItem', 'TITLE', e.target.value)"
+            @change="
+              (e) => createProblemStore.updateListItem('TITLE', e.target.value)
+            "
           />
           <div ref="questionEditor"></div>
           <p>답 <sup class="text-black-2">*</sup></p>
@@ -447,5 +400,14 @@ onBeforeUnmount(() => {
   top: 188px !important;
   bottom: auto !important;
   transform: none !important;
+}
+:deep(button) {
+  text-align: center;
+}
+:deep(.toastui-editor-contents) {
+  font-family: "Pretendard";
+}
+:deep(p) {
+  font-size: 16px;
 }
 </style>

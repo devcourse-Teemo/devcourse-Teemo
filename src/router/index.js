@@ -2,7 +2,7 @@ import { createRouter, createWebHistory } from "vue-router";
 import DefaultLayout from "@/components/layout/DefaultLayout.vue";
 
 // 페이지 컴포넌트 가져오기
-import MyProblemSets from "@/pages/MyProblemSets.vue";
+import MyProblemSets from "@/pages/my-problem-sets/MyProblemSets.vue";
 import MyProblems from "@/pages/my-problems/MyProblems.vue";
 import ProblemBoard from "@/pages/problem-board/ProblemBoard.vue";
 import ProblemSetBoard from "@/pages/problem-set-board/ProblemSetBoard.vue";

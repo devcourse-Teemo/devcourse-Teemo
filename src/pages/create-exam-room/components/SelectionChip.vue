@@ -24,10 +24,10 @@ defineEmits(["remove"]);
 </script>
 
 <template>
-  <div v-if="show" class="flex items-center">
+  <div v-if="show" class="flex items-center mb-4">
     <Chip
       :label="label"
-      :removable="removable"
+      :removable="false"
       @remove="$emit('remove')"
       class="bg-orange-50 text-orange-500 border border-orange-200"
     >

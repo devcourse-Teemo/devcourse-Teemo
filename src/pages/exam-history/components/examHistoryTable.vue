@@ -22,6 +22,7 @@ const { exams } = defineProps({
         dataKey="id"
         tableStyle="min-width: 50rem;"
         showGridlines
+        removableSort
         paginator
         :rows="10"
       >

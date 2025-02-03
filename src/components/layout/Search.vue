@@ -1,5 +1,5 @@
 <script setup>
-import { ref, onMounted, onBeforeUnmount } from "vue";
+import { ref, onMounted, onBeforeUnmount, watch } from "vue";
 import dropdownDown from "@/assets/icons/problem-set-board/dropdown-down.svg";
 import search from "@/assets/icons/problem-set-board/search.svg";
 import { Chip, DatePicker, RadioButton } from "primevue";
@@ -19,7 +19,6 @@ const {
   startDate: startDateFromQuery,
   endDate: endDateFromQuery,
   status: statusFromQuery,
-  sort,
 } = route.query;
 
 const keyword = ref(keywordFromQuery);
@@ -41,6 +40,40 @@ const handleClickOutside = (event) => {
     isOpen.value = false;
   }
 };
+
+watch(status, (newStatus) => {
+  emit(
+    "search",
+    keyword.value,
+    startDate.value,
+    endDate.value,
+    route.query.sort,
+    newStatus,
+  );
+});
+
+watch(startDate, (newStartDate) => {
+  emit(
+    "search",
+    keyword.value,
+    newStartDate,
+    endDate.value,
+    route.query.sort,
+    status.value,
+  );
+});
+
+watch(endDate, (newEndDate) => {
+  emit(
+    "search",
+    keyword.value,
+    startDate.value,
+    newEndDate,
+    route.query.sort,
+    status.value,
+  );
+});
+
 onMounted(() => {
   window.addEventListener("click", handleClickOutside);
 });
@@ -54,7 +87,7 @@ onBeforeUnmount(() => {
       @submit.prevent="
         emit('search', keyword, startDate, endDate, sort, status)
       "
-      class="flex justify-between items-center bg-beige-2 has-[:focus]:border-orange-1 rounded-2xl h-12 p-4 border border-black-4"
+      class="flex justify-between items-center bg-beige-2 has-[:focus]:border-orange-1 rounded-lg h-12 p-4 border border-black-4"
     >
       <input
         v-model="keyword"
@@ -62,7 +95,7 @@ onBeforeUnmount(() => {
         class="w-full bg-transparent"
         placeholder="제목, 문제로 검색"
       />
-      <button class="bg-transparent">
+      <button class="bg-transparent item-middle">
         <img :src="search" alt="검색 아이콘" />
       </button>
     </form>
@@ -102,15 +135,16 @@ onBeforeUnmount(() => {
           </ul>
         </div>
       </div>
-      <div class="w-full px-4 bg-beige-2 border border-black-4 rounded-lg">
+      <div class="w-full h-10 px-4 bg-beige-2 border border-black-4 rounded-lg">
         <div class="flex card items-center h-10 gap-4">
-          <span>기간 선택</span>
+          <span>검색 기간</span>
           <span>|</span>
           <span>시작일</span>
           <DatePicker
             v-model="startDate"
             class="w-[116px] h-6"
             id="startTime"
+            :max-date="endDate ? new Date(endDate) : new Date()"
             dateFormat="yy-mm-dd"
             showButtonBar
           />

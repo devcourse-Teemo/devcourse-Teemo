@@ -1,6 +1,6 @@
 <script setup>
-import { ref, onMounted, watch } from "vue";
-import { Paginator } from "primevue";
+import { ref, onMounted } from "vue";
+import { Paginator, useToast } from "primevue";
 import Comment from "@/components/layout/Comment.vue";
 import { commentAPI } from "@/api/comment";
 import { authAPI } from "@/api/auth";
@@ -28,6 +28,7 @@ const props = defineProps({
   },
 });
 
+const toast = useToast();
 const emit = defineEmits(["page-change", "comment-change"]);
 const text = ref("");
 const userId = ref(null);
@@ -54,6 +55,14 @@ const handleSubmitComment = async () => {
     comment: text.value,
     uid: userId.value,
   });
+
+  toast.add({
+    severity: "info",
+    summary: "댓글 작성 포인트 지급",
+    detail: "댓글 작성으로 2포인트를 획득했습니다.",
+    life: 3000,
+  });
+
   text.value = "";
 };
 
@@ -64,7 +73,7 @@ onMounted(async () => {
 </script>
 <template>
   <div class="flex flex-col w-full">
-    <div class="text-[24px] text-[#6A718B]">댓글</div>
+    <h3 class="text-2xl text-gray-700 mb-6">댓글</h3>
 
     <div class="w-full">
       <Comment

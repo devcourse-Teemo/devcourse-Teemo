@@ -8,15 +8,16 @@ const route = useRoute();
 </script>
 
 <template>
-  <div class="flex h-screen overflow-auto w-full">
+  <div class="flex h-auto w-full bg-beige-2">
     <Sidebar v-if="route.path !== '/'" class="relative z-40" />
-    <div class="flex-1 flex flex-col bg-beige-2 py-6 pr-6 overflow-x-hidden">
-      <ExamResultHeader class="rounded-t-3xl bg-[#F0F0F0]" />
-      <main class="flex-1 rounded-b-3xl bg-white">
-        <section
-          class="max-w-[1200px] min-h-[400rem] py-8 pl-80 -mr-8 relative"
-        >
-          <ExamResultBody class="absolute top-[-56px] max-w-[712px]" />
+
+    <div
+      class="flex-1 flex flex-col justify-center py-6 pr-6 overflow-x-hidden"
+    >
+      <main class="rounded-3xl bg-white flex flex-col pb-20">
+        <ExamResultHeader class="rounded-t-3xl bg-black-6 mx-auto" />
+        <section class="max-w-[1200px] py-8 mx-auto flex justify-center">
+          <ExamResultBody class="max-w-[1000px] mt-[-104px] z-10 ml-40" />
         </section>
       </main>
     </div>

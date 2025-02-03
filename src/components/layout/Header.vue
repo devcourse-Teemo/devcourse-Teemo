@@ -3,13 +3,12 @@ import { ref, watch, onBeforeMount } from "vue";
 import { useRouter } from "vue-router";
 import Menu from "primevue/menu";
 import LoginModal from "./LoginModal.vue";
-import { Button } from "primevue";
 import Notification from "./Notification.vue";
 import { userAPI } from "@/api/user";
 import { useAuthStore } from "@/store/authStore";
 import { storeToRefs } from "pinia";
+import { RouterLink } from "vue-router";
 
-const alertPath = new URL("@/assets/icons/alert.svg", import.meta.url).href;
 const pointPath = new URL("@/assets/icons/point.svg", import.meta.url).href;
 
 const router = useRouter();
@@ -78,17 +77,11 @@ watch(
     <nav
       class="flex items-center justify-end px-16 py-6 space-x-3 text-gray-600"
     >
-      <Button
-        icon="pi pi-sun"
-        severity="secondary"
-        variant="text"
-        rounded
-        class="!py-0"
-      />
       <!-- 알림 및 포인트 -->
       <Notification />
 
-      <div
+      <RouterLink
+        to="/mypage?tab=포인트+내역"
         class="flex items-center px-2 py-1 h-[24px] bg-black-5 rounded-full font-pretend"
       >
         <!-- 별 아이콘 -->
@@ -97,7 +90,7 @@ watch(
         <span class="text-sm font-bold text-gray-800">
           {{ userInfo?.total_points }}
         </span>
-      </div>
+      </RouterLink>
       <!-- 메뉴 트리거 -->
       <div
         @click="openMenu"

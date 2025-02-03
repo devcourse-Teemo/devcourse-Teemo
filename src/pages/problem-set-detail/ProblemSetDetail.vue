@@ -7,18 +7,19 @@ import { userAPI } from "@/api/user";
 import { authAPI } from "@/api/auth";
 import { workbookAPI } from "@/api/workbook";
 import { workbookLikeAPI } from "@/api/workbookLike";
+import ConfirmModal from "@/components/layout/ConfirmModal.vue";
 import ProblemTable from "@/components/layout/ProblemTable.vue";
 import like from "@/assets/icons/problem-set-board-detail/like.svg";
 import thumbsUp from "@/assets/icons/problem-set-board-detail/thumbs-up.svg";
 import addOption from "@/assets/icons/problem-set-board-detail/add-option.svg";
 import CommentList from "@/pages/problem-set-detail/components/CommentList.vue";
 import testCenterEnter from "@/assets/icons/problem-set-board-detail/test-center-enter.svg";
-import ConfirmModal from "@/components/layout/ConfirmModal.vue";
+
+import { testCenterAPI } from "@/api/testCenter";
 
 const toast = useToast();
 const route = useRoute();
 const router = useRouter();
-const confirm = useConfirm();
 
 const itemsPerPage = 10;
 
@@ -36,51 +37,85 @@ const updated_at = ref(null);
 const description = ref(null);
 const problemSetLike = ref(null);
 const workbookUserCheck = ref(null);
-const workbookAnotherUserCheck = ref(null);
+const workbookShared = ref(false);
 
 const goToEditPage = () => {
   router.push(`/problem-set-board-update/${route.params.problemSetId}`);
 };
 
 const problemSetDelete = async () => {
-  await workbookAPI.removeWorkbook(route.params.problemSetId);
-  router.go(-1);
-};
-const problemSetShare = async () => {
-  if (workbookAnotherUserCheck.value) {
+  const testedProblemSet = await testCenterAPI.getAll();
+
+  const foundItem = testedProblemSet.find((item) => {
+    return String(item.workbook_id) === String(route.params.problemSetId);
+  });
+
+  if (foundItem) {
     toast.add({
       severity: "error",
-      summary: "문제집 공유 실패",
-      detail: "이미 공유 받으신 문제집입니다.",
+      summary: "문제집 삭제 실패",
+      detail: "해당 문제집은 시험내역이 있어 삭제에 실패 했습니다.",
       life: 3000,
     });
-    return;
   } else {
-    if (share.value) {
-      confirm.require({
-        group: "share",
-        header: "해당 문제집을 공유 받으시겠습니까?",
-        message: "공유 받으시려면 '공유 받기' 버튼을 클릭하세요",
-        accept: async () => {
-          await workbookAPI.sharedWorkbookAdd([
-            {
-              workbook_id: route.params.problemSetId,
-              uid: uid.value,
-            },
-          ]);
-          router.push("/my-problem-sets");
+    await workbookAPI.removeWorkbook(route.params.problemSetId);
+    router.go(-1);
+  }
+};
+
+const checkWorkbookShared = async () => {
+  const userId = await authAPI.getCurrentUser();
+  const sharedWorkbook = await workbookAPI.getSharedWorkbook(
+    route.params.problemSetId,
+    userId.id,
+  );
+  workbookShared.value = sharedWorkbook.length > 0;
+};
+
+const handleShare = async () => {
+  if (workbookShared.value) {
+    workbookShared.value = false;
+    workbookAPI.sharedWorkbookDelete(uid.value, route.params.problemSetId);
+    toast.add({
+      severity: "success",
+      summary: "문제집 공유 해제 성공",
+      detail: "문제집을 성공적으로 공유 해제 했습니다.",
+      life: 3000,
+    });
+
+    return;
+  }
+
+  if (share.value) {
+    try {
+      await workbookAPI.sharedWorkbookAdd([
+        {
+          workbook_id: route.params.problemSetId,
+          uid: uid.value,
         },
-        reject: () => {},
+      ]);
+      workbookShared.value = true;
+      toast.add({
+        severity: "success",
+        summary: "문제집 공유 성공",
+        detail: "문제집을 성공적으로 공유받았습니다.",
+        life: 3000,
       });
-    } else {
+    } catch (error) {
       toast.add({
         severity: "error",
         summary: "문제집 공유 실패",
-        detail: "해당 문제집은 제작자가 공유 설정을 하지 않으셨습니다.",
+        detail: "문제집 공유 중 오류가 발생했습니다.",
         life: 3000,
       });
-      return;
     }
+  } else {
+    toast.add({
+      severity: "error",
+      summary: "문제집 공유 실패",
+      detail: "해당 문제집은 제작자가 공유 설정을 하지 않으셨습니다.",
+      life: 3000,
+    });
   }
 };
 
@@ -97,20 +132,10 @@ const myMenuItems = [
   },
 ];
 
-const otherMenuItems = [
-  {
-    label: "공유받기",
-    icon: "pi pi-bookmark",
-    command: problemSetShare,
-  },
-];
-
 const myMenu = ref(null);
-const otherMenu = ref(null);
 
 const openMenu = (event) => {
   if (workbookUserCheck.value) myMenu.value.toggle(event);
-  else otherMenu.value.toggle(event);
 };
 
 const fetchComments = async (page = 1) => {
@@ -133,12 +158,18 @@ const handleLike = async () => {
     problemSetLike.value = false;
     await workbookLikeAPI.remove(uid.value, route.params.problemSetId);
     await workbookLikeFunction();
+    love.value = await workbookLikeAPI.getWorkbookLikeCount(
+      route.params.problemSetId,
+    );
     return;
   }
 
   problemSetLike.value = true;
   await workbookLikeAPI.add(uid.value, route.params.problemSetId);
   await workbookLikeFunction();
+  love.value = await workbookLikeAPI.getWorkbookLikeCount(
+    route.params.problemSetId,
+  );
 };
 
 const workbookLikeFunction = async () => {
@@ -171,20 +202,12 @@ onMounted(async () => {
   const userId = await authAPI.getCurrentUser();
   uid.value = userId.id;
 
-  const anotherUserId = await workbookAPI.getSharedWorkbook(
-    route.params.problemSetId,
-    userId.id,
-  );
-
   if (workbookData.uid === userId.id) workbookUserCheck.value = true;
   else workbookUserCheck.value = false;
 
-  if (anotherUserId.length) {
-    workbookAnotherUserCheck.value = true;
-  } else workbookAnotherUserCheck.value = false;
-
   await workbookLikeFunction();
   await fetchComments();
+  await checkWorkbookShared();
 });
 </script>
 
@@ -193,7 +216,7 @@ onMounted(async () => {
     <div class="h-[124px] flex items-center mb-[63px] w-full justify-between">
       <div
         class="w-[124px] h-[124px] mr-[21px]"
-        v-if="workbookUserCheck || workbookAnotherUserCheck"
+        v-if="workbookUserCheck || workbookShared"
       >
         <RouterLink
           :to="`/create-exam-room?problemSetId=${route.params.problemSetId}`"
@@ -231,9 +254,21 @@ onMounted(async () => {
           </button>
         </div>
         <div class="w-10 h-10 ml-[26px]">
-          <button @click="openMenu">
+          <button @click="openMenu" v-if="workbookUserCheck">
             <img :src="addOption" alt="문제집 추가 설정" />
           </button>
+          <div class="w-8 h-8" v-if="!workbookUserCheck">
+            <button
+              @click="handleShare"
+              class="w-full h-full flex items-center justify-center"
+            >
+              <i
+                class="pi pi-bookmark"
+                style="font-size: 32px"
+                :class="{ 'text-orange-500': workbookShared }"
+              ></i>
+            </button>
+          </div>
         </div>
       </div>
     </div>
@@ -259,13 +294,6 @@ onMounted(async () => {
   <Menu
     :model="myMenuItems"
     ref="myMenu"
-    popup
-    appendTo="body"
-    class="p-menu w-[200px] font-pretend"
-  />
-  <Menu
-    :model="otherMenuItems"
-    ref="otherMenu"
     popup
     appendTo="body"
     class="p-menu w-[200px] font-pretend"

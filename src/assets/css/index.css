@@ -104,3 +104,7 @@ textarea:focus {
   @apply outline-none;
   @apply border-orange-1;
 }
+
+.p-button-icon-only {
+  padding: 0 !important;
+}

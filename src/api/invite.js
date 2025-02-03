@@ -4,10 +4,14 @@ const getAll = async (userId) => {
   try {
     const { data, error } = await supabase
       .from("invite")
-      .select(`
+      .select(
+        `
         *,
-        test_center(*, workbook(title))
-      `)
+        test_center(*, workbook(title,
+        description,
+        workbook_problem (count)))
+      `,
+      )
       .eq("target_uid", userId);
 
     if (error) throw error;
@@ -74,10 +78,10 @@ const getParticipantCount = async (testCenterId) => {
   try {
     const { count, error } = await supabase
       .from("invite")
-      .select('*', { count: 'exact', head: true })
-      .eq('test_center_id', testCenterId)
-      .eq('participate', true);
-    
+      .select("*", { count: "exact", head: true })
+      .eq("test_center_id", testCenterId)
+      .eq("participate", true);
+
     return count || 0;
   } catch (error) {
     console.error(error);
@@ -90,5 +94,5 @@ export const inviteAPI = {
   add,
   accept,
   deny,
-  getParticipantCount
+  getParticipantCount,
 };

@@ -1,16 +1,19 @@
 <script setup>
 import ProblemTable from "@/components/layout/ProblemTable.vue";
 import Search from "@/components/layout/Search.vue";
-import { ref, watch } from "vue";
+import { ref, watch, onBeforeMount, computed } from "vue";
 import { SORT } from "@/const/sorts";
-import { useRouter } from "vue-router";
 import { useAuthStore } from "@/store/authStore";
 import { storeToRefs } from "pinia";
 import { againViewProblemAPI } from "@/api/againViewProblem";
 import { problemAPI } from "@/api/problem";
 import { categoryAPI } from "@/api/category";
 import { useToast } from "primevue/usetoast";
+import { useRouter } from "vue-router";
+import { useRoute } from "vue-router";
+import { formatDate } from "@/utils/formatDate";
 
+const route = useRoute();
 const router = useRouter();
 const authStore = useAuthStore();
 const { user } = storeToRefs(authStore);
@@ -19,27 +22,19 @@ const initialProblems = ref([]);
 const loading = ref(false);
 const error = ref(null);
 const toast = useToast();
-const filterType = ref("all"); // 'all', 'againView', 'myProblems', 'sharedProblems'
+const filterType = ref("all"); // 'all', 'againView', 'myProblems'
 
 const handleFilterChange = (type) => {
   filterType.value = type;
 };
 
-const filterProblems = () => {
+const filteredProblems = computed(() => {
   if (filterType.value === "all") {
-    problems.value = initialProblems.value;
+    return problems.value;
   } else if (filterType.value === "againView") {
-    problems.value = initialProblems.value.filter(
-      (problem) => problem.againView,
-    );
-  } else if (filterType.value === "myProblems") {
-    problems.value = initialProblems.value.filter((problem) => problem.isOwner);
-  } else if (filterType.value === "sharedProblems") {
-    problems.value = initialProblems.value.filter(
-      (problem) => problem.isShared,
-    );
+    return problems.value.filter((problem) => problem.againView);
   }
-};
+});
 
 const loadProblems = async (userId) => {
   if (!userId) return;
@@ -48,38 +43,43 @@ const loadProblems = async (userId) => {
   error.value = null;
 
   try {
-    const [againViewProblems, userProblems, sharedProblems] = await Promise.all(
-      [
-        againViewProblemAPI.getAllByUserId(userId),
-        problemAPI.getAllByUserId(userId),
-        problemAPI.getUserSharedProblems(userId),
-      ],
-    );
+    const [againViewProblems, userProblems, categories] = await Promise.all([
+      againViewProblemAPI.getAllByUserId(userId),
+      problemAPI.getAllByUserId(userId),
+      categoryAPI.getAll(),
+    ]);
 
-    const mergedProblems = [
-      ...(againViewProblems?.length
-        ? againViewProblems.map((p) => ({
-            ...(p.problem || p), // againViewProblems는 problem 객체 안에 데이터가 있음
-            againView: true,
-            latest_status: p.status || p.history?.[0]?.status || "none",
-          }))
-        : []),
-      ...(userProblems?.length
-        ? userProblems.map((p) => ({
-            ...p,
-            isOwner: true,
-            latest_status: p.history?.[0]?.status || "none",
-          }))
-        : []),
-      ...(sharedProblems?.length
-        ? sharedProblems.map((p) => ({
-            ...(p.problem || p), // sharedProblems도 problem 객체 안에 데이터가 있음
-            isShared: true,
-            latest_status: p.history?.[0]?.status || "none",
-          }))
-        : []),
-    ];
+    const problemsMap = new Map();
 
+    userProblems.forEach((problem) => {
+      problemsMap.set(problem.id, {
+        ...problem,
+        isOwner: true,
+        againView: false,
+        latest_status: problem.latest_status,
+        category_name: categories.find((c) => c.id === problem.category_id)
+          ?.name,
+      });
+    });
+
+    againViewProblems.forEach((againViewProblem) => {
+      const existingProblem = problemsMap.get(againViewProblem.id);
+      if (existingProblem) {
+        existingProblem.againView = true;
+      } else {
+        problemsMap.set(againViewProblem.id, {
+          ...againViewProblem,
+          isOwner: false,
+          againView: true,
+          latest_status: againViewProblem.latest_status,
+          category_name: categories.find(
+            (c) => c.id === againViewProblem.category_id,
+          )?.name,
+        });
+      }
+    });
+
+    const mergedProblems = Array.from(problemsMap.values());
     problems.value = mergedProblems;
     initialProblems.value = mergedProblems;
   } catch (err) {
@@ -109,7 +109,6 @@ const search = async (
   try {
     let filteredProblems = [...initialProblems.value];
 
-    // 상태별 필터링
     if (status) {
       filteredProblems = filteredProblems.filter((problem) => {
         switch (status) {
@@ -125,7 +124,6 @@ const search = async (
       });
     }
 
-    // 기존 필터링 로직 유지
     if (keyword) {
       const searchTerm = keyword.toLowerCase();
       filteredProblems = filteredProblems.filter(
@@ -151,11 +149,11 @@ const search = async (
 
     problems.value = filteredProblems;
 
-    router.push({
+    router.replace({
       query: {
         ...(keyword && { keyword }),
-        ...(startDate && { startDate }),
-        ...(endDate && { endDate }),
+        ...(startDate && { startDate: formatDate(startDate) }),
+        ...(endDate && { endDate: formatDate(startDate) }),
         ...(status && { status }),
         sort,
       },
@@ -168,30 +166,28 @@ const search = async (
   }
 };
 
+onBeforeMount(() => {
+  loadProblems(user.value.id);
+});
+
 watch(
-  () => user.value?.id,
-  (newUserId) => {
-    if (newUserId) {
-      loadProblems(newUserId);
-    }
+  () => route.query,
+  (newQuery) => {
+    filterType.value = newQuery.type || "all";
   },
   { immediate: true },
 );
-
-// 필터 변경 감시
-watch(filterType, filterProblems);
 </script>
 
 <template>
   <section class="flex flex-col w-[1000px] mx-auto relative">
-    <Toast />
     <h1 class="text-[42px] font-laundry mb-16">보관한 문제</h1>
     <div class="flex flex-col gap-16">
       <Search :show-status="true" @search="search" />
       <div v-if="loading" class="text-center">로딩 중...</div>
       <ProblemTable
         v-else
-        :problems="problems"
+        :problems="filteredProblems"
         :show-my-problem="true"
         :show-shared-problem="true"
         :show-problem="true"

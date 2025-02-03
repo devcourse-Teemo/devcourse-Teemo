@@ -1,5 +1,5 @@
 <script setup>
-import { ref, onMounted, watch, nextTick } from "vue";
+import { ref, watch, nextTick } from "vue";
 import Editor from "@toast-ui/editor";
 import "@toast-ui/editor/dist/toastui-editor.css";
 import { useProblemUpdateStore } from "@/store/problemUpdateStore";
@@ -53,9 +53,8 @@ const toggleAccordion = async () => {
         toolbarItems: [
           ["heading", "bold", "italic", "strike"],
           ["hr", "quote"],
-          ["ul", "ol", "task", "indent", "outdent"],
-          ["table", "image", "link"],
-          ["code", "codeblock"],
+          ["ul", "ol"],
+          ["table", "image"],
         ],
         events: {
           change: handleExplanationChange,
@@ -74,7 +73,6 @@ watch(
     }
   },
 );
-
 </script>
 
 <template>
@@ -128,6 +126,7 @@ watch(
     <input
       type="text"
       :value="source"
+      :maxlength="20"
       @input="handleSourceChange"
       class="border border-gray-300 rounded p-1 flex-grow"
     />
@@ -140,5 +139,14 @@ watch(
 }
 .bg-black-6 {
   background-color: #666;
+}
+:deep(button) {
+  text-align: center;
+}
+:deep(.toastui-editor-contents) {
+  font-family: "Pretendard";
+}
+:deep(p) {
+  font-size: 16px;
 }
 </style>

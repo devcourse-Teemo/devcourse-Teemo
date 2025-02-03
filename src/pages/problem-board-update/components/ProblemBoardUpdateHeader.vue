@@ -11,6 +11,8 @@ import { useProblemUpdateStore } from "@/store/problemUpdateStore";
 import { useRouter } from "vue-router";
 import { storeToRefs } from "pinia";
 import { useProblemStore } from "@/store/problemStore";
+import { toRaw } from "vue";
+import { useConfirm } from "primevue/useconfirm";
 
 const props = defineProps({
   problem: {
@@ -28,12 +30,15 @@ const router = useRouter();
 const categories = ref([]);
 const filteredCategory = ref("");
 const { editedProblem } = storeToRefs(problemUpdateStore);
+const confirm = useConfirm();
 
 // author 정보 가져오기
 const author = computed(() => problemStore.author);
 
 // 사용자 등급 정보
-const userGrade = computed(() => getCurrentGradeInfo(author.value?.total_points || 0));
+const userGrade = computed(() =>
+  getCurrentGradeInfo(author.value?.total_points || 0),
+);
 
 // 라우트 설정
 const routeConfig = computed(() => {
@@ -61,8 +66,14 @@ const handleTitleChange = (event) => {
 };
 
 // 카테고리 변경 감지
-const handleCategoryChange = (category) => {
-  problemUpdateStore.updateField("category", category[0]);
+const handleCategoryChange = (event) => {
+  if (event?.value?.[0]) {
+    const rawCategory = toRaw(event.value[0]);
+
+    problemUpdateStore.updateField("category", rawCategory.id);
+  } else {
+    console.warn("유효하지 않은 카테고리 데이터:", event);
+  }
 };
 
 // 공개 여부 변경 감지
@@ -92,7 +103,7 @@ const createCategory = async () => {
   }
 
   try {
-    const newCategory = await categoryAPI.create({
+    const newCategory = await categoryAPI.createCategory({
       name: filteredCategory.value.trim(),
     });
 
@@ -108,11 +119,10 @@ const createCategory = async () => {
       life: 3000,
     });
   } catch (error) {
-    console.error("카테고리 생성 실패:", error);
     toast.add({
       severity: "error",
       summary: "오류",
-      detail: "카테고리 생성에 실패했습니다.",
+      detail: error.message || "카테고리 생성에 실패했습니다.",
       life: 3000,
     });
   }
@@ -121,6 +131,15 @@ const createCategory = async () => {
 // 수정 완료 핸들러
 const handleUpdate = async () => {
   try {
+    const category = editedProblem.value.category;
+    const normalizedCategoryId = category
+      ? typeof category === "object"
+        ? toRaw(category)?.id || category.id
+        : category
+      : null;
+
+    editedProblem.value.category = normalizedCategoryId;
+
     const success = await problemUpdateStore.saveProblem();
     if (success) {
       router.push(`/problem-board/${props.problem.id}`);
@@ -133,7 +152,16 @@ const handleUpdate = async () => {
 // 취소 핸들러
 const handleCancel = () => {
   problemUpdateStore.cancelEdit();
-  router.back();
+  confirm.require({
+    message:
+      "정말 수정을 취소하시겠습니까? \n 지금까지 수정한 내용은 저장되지 않습니다.",
+    header: "수정 취소 확인",
+    icon: "pi pi-exclamation-triangle",
+    accept: () => {
+      problemUpdateStore.cancelEdit();
+      router.back();
+    },
+  });
 };
 
 const fetchUserGrade = async () => {
@@ -225,11 +253,13 @@ onMounted(async () => {
   </div>
 
   <div class="flex items-center gap-4 mb-10">
-    <div class="flex-1">
+    <form class="flex-1">
       <input
         type="text"
         class="text-4xl font-bold mb-4 border border-gray-300 rounded p-2 w-full"
+        :maxlength="20"
         v-model="problem.title"
+        required
         @change="handleTitleChange"
       />
       <div class="flex items-center gap-2 text-sm">
@@ -260,15 +290,9 @@ onMounted(async () => {
               </div>
             </template>
           </MultiSelect>
-
-          <label for="shared">공개 여부</label>
-          <ToggleSwitch
-            :modelValue="editedProblem.shared"
-            @update:modelValue="handleSharedChange"
-          />
         </fieldset>
       </div>
-    </div>
+    </form>
   </div>
 </template>
 

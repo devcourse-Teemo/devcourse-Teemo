@@ -1,10 +1,11 @@
 <script setup>
-import { ref, computed, watchEffect } from "vue";
+import { ref, computed, watchEffect, watch } from "vue";
 import { useAuthStore } from "@/store/authStore";
-import { workbookAPI } from "@/api/workbook";
 import SearchBar from "@/components/layout/SearchBar.vue";
 import MyWorkBook from "./MyWorkBook.vue";
-import { Paginator } from "primevue";
+import { workbookAPI } from "@/api/workbook";
+import Paginator from "primevue/paginator";
+import { useRoute } from "vue-router";
 
 const props = defineProps({
   selectedWorkbook: {
@@ -13,54 +14,69 @@ const props = defineProps({
   },
 });
 
+const route = useRoute();
 const emit = defineEmits(["update:selectedWorkbook"]);
 
+// Store
 const authStore = useAuthStore();
+
+// Constants
+const itemsPerPage = 6;
+
+// Data
 const workbooks = ref([]);
-const keyword = ref("");
-const currentPage = ref(1);
-const itemsPerPage = 8;
+const currentPage = ref(0);
+const searchKeyword = ref("");
 
-// 검색어로 필터링된 문제집 목록
+// Computed
 const filteredWorkbooks = computed(() => {
-  if (!keyword.value) return workbooks.value;
-
-  return workbooks.value.filter(
-    (book) =>
-      book.title?.toLowerCase().includes(keyword.value.toLowerCase()) ||
-      book.description?.toLowerCase().includes(keyword.value.toLowerCase()),
+  if (!searchKeyword.value) return workbooks.value;
+  return workbooks.value.filter((book) =>
+    book.title.toLowerCase().includes(searchKeyword.value.toLowerCase()),
   );
 });
 
-// 현재 페이지에 표시될 문제집 목록
 const paginatedWorkbooks = computed(() => {
-  const start = (currentPage.value - 1) * itemsPerPage;
-  const end = start + itemsPerPage;
-  return filteredWorkbooks.value.slice(start, end);
+  const start = currentPage.value * itemsPerPage;
+  const result = filteredWorkbooks.value.slice(start, start + itemsPerPage);
+  return result;
 });
 
-const handleSearch = (searchKeyword) => {
-  keyword.value = searchKeyword;
-  currentPage.value = 1; // 검색 시 첫 페이지로 이동
+// Methods
+const fetchWorkbooks = async () => {
+  try {
+    const response = await workbookAPI.getAllByUserId(authStore.user.id);
+    workbooks.value = response;
+  } catch (error) {
+    console.error("문제집 로드 실패:", error);
+  }
 };
 
-const onPageChange = (event) => {
-  currentPage.value = event.page + 1;
+const handleSearch = (keyword) => {
+  searchKeyword.value = keyword;
+  currentPage.value = 0;
 };
 
 const handleWorkbookSelect = (workbook) => {
   emit("update:selectedWorkbook", workbook);
 };
 
-// 문제집 데이터 불러오기
-const fetchWorkbooks = async () => {
-  try {
-    const data = await workbookAPI.getUid(authStore.user?.id);
-    workbooks.value = data || [];
-  } catch (error) {
-    console.error("문제집 데이터 불러오기 실패:", error);
-  }
+const onPageChange = (event) => {
+  currentPage.value = event.page;
 };
+
+watch(workbooks, () => {
+  if (!route.query?.problemSetId) return;
+
+  const workbook = workbooks.value.find(
+    (book) => book.id === Number(route.query.problemSetId),
+  );
+  if (workbook) {
+    handleWorkbookSelect(workbook);
+  }
+});
+
+// Watchers
 watchEffect(() => {
   if (authStore.isAuthenticated && authStore.user?.id) {
     fetchWorkbooks();
@@ -80,7 +96,7 @@ watchEffect(() => {
     <!-- 문제집 목록 -->
     <section class="flex flex-col gap-5">
       <div class="flex items-center gap-4">
-        <h2 class="font-semibold text-xl">내가 만든 문제집</h2>
+        <h2 class="font-semibold text-xl">보관한 문제집</h2>
       </div>
 
       <div
@@ -94,11 +110,13 @@ watchEffect(() => {
       <MyWorkBook
         v-else
         :visibleMyBooks="paginatedWorkbooks"
+        :selectedWorkbook="selectedWorkbook"
         @select-workbook="handleWorkbookSelect"
       />
 
       <!-- 페이지네이션 -->
       <Paginator
+        v-if="filteredWorkbooks.length > itemsPerPage"
         :rows="itemsPerPage"
         :totalRecords="filteredWorkbooks.length"
         @page="onPageChange"
