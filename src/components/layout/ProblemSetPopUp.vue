@@ -54,7 +54,7 @@ const reversedProblemSets = computed(() => [...problemSets.value].reverse());
 const resolver = ({ values }) => {
   const errors = { title: [] };
 
-  if (!values.title.trim()) {
+  if (!values.title?.trim()) {
     errors.title.push({ type: "required", message: "제목은 필수입니다." });
   }
 

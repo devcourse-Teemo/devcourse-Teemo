@@ -102,7 +102,7 @@ onMounted(() => {
     </Button>
     <div
       ref="popup"
-      class="overlay flex items-center cursor-pointer relative rounded"
+      class="flex items-center cursor-pointer relative rounded"
       @click="onClickFolder"
     >
       <p class="p-1.5 bg-orange-1 rounded mr-4">
@@ -127,14 +127,10 @@ onMounted(() => {
         v-model:show-add-popup="isCreateNewFolder"
         @clickProblemSet="setFolderFromList"
         @clickAddProblemSet="onCreateNewFolder"
-        class="w-64 absolute top-full left-1/2 -translate-x-1/2 mt-3"
+        class="w-64 absolute top-full left-1/2 -translate-x-1/2 mt-3 z-50"
       />
     </div>
     <Button label="저장하기" @click="emits('submitProblems')"></Button>
   </header>
 </template>
-<style scoped>
-::v-deep(.overlay) {
-  z-index: 9 !important;
-}
-</style>
+<style scoped></style>
