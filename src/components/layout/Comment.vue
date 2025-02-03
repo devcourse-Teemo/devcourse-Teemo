@@ -59,7 +59,7 @@ const commentDelete = async () => {
 
   confirm.require({
     group: "delete",
-    header: "해당 댓글 제거 하시겠습니까?",
+    header: "해당 댓글을 제거 하시겠습니까?",
     message: "댓글을 제거하시려면 '제거' 버튼을 클릭하세요",
     accept: async () => {
       isVisible.value = false;
