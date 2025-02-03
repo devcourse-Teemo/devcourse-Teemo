@@ -121,12 +121,13 @@ watchEffect(() => {
     </div>
     <div v-if="isOpen" class="p-4">
       <h4 class="text-lg font-semibold text-black-2 mb-4">문제 해설</h4>
-      <div ref="viewerRef" class="text-gray-700 min-h-4 mb-10"></div>
+      <div v-if="explanation" ref="viewerRef" class="text-gray-700 min-h-4 mb-10"></div>
+      <p v-else class="text-gray-700">해설이 없습니다.</p>
 
       <!-- GPT 풀이 섹션 -->
       <div class="mt-8 border-t border-gray-200 pt-6">
         <div class="flex items-center justify-between mb-4">
-          <h4 class="text-lg font-semibold text-black-2">GPT의 풀이</h4>
+          <h4 class="text-lg font-semibold text-black-2">AI 해설</h4>
           <button
             @click="getGptExplanation"
             class="px-4 py-2 bg-orange-1 text-white rounded-lg hover:bg-orange-2 disabled:opacity-50"
