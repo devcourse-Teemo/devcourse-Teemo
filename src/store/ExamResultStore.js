@@ -121,6 +121,7 @@ export const useExamResultStore = defineStore("examResult", {
       }
       this.isFetchingProblems = true;
       try {
+        //workbookProblem에서 바로 export중
         const fetchedProblems = await fetchProblemsForTestResult(testResultId);
 
         if (!fetchedProblems || fetchedProblems.length === 0) {
@@ -129,8 +130,17 @@ export const useExamResultStore = defineStore("examResult", {
         }
 
         // 문제 데이터 정렬 및 추가 필드 생성
-        this.problems = fetchedProblems
-          .sort((a, b) => a.id - b.id) // problem_id 순서대로 정렬
+        // problem_id 순서대로 정렬
+        // this.problems = fetchedProblems
+        //   .sort((a, b) => a.id - b.id)
+        //   .map((problem, index) => ({
+        //     ...problem,
+        //     number: index + 1,
+        //     flagged: false,}))
+
+        // 문제 데이터 정렬 및 추가 필드 생성
+        this.problems = [...fetchedProblems]
+          .reverse()
           .map((problem, index) => ({
             ...problem,
             number: index + 1, // 문제 번호 추가
@@ -159,6 +169,7 @@ export const useExamResultStore = defineStore("examResult", {
       try {
         const testCenterData = await problemHistoryAPI.getTestCenterId(
           testResultId,
+          userId,
         );
         if (!testCenterData) {
           console.error("fetchProblems: test_center_id를 가져오지 못했습니다.");
