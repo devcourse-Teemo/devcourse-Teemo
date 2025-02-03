@@ -6,6 +6,7 @@ import MyWorkBook from "./MyWorkBook.vue";
 import { workbookAPI } from "@/api/workbook";
 import Paginator from "primevue/paginator";
 import { useRoute } from "vue-router";
+import { useWorkbookStore } from "@/store/workbookStore";
 
 const props = defineProps({
   selectedWorkbook: {
@@ -19,6 +20,7 @@ const emit = defineEmits(["update:selectedWorkbook"]);
 
 // Store
 const authStore = useAuthStore();
+const workbookStore = useWorkbookStore();
 
 // Constants
 const itemsPerPage = 6;
@@ -45,8 +47,30 @@ const paginatedWorkbooks = computed(() => {
 // Methods
 const fetchWorkbooks = async () => {
   try {
-    const response = await workbookAPI.getAllByUserId(authStore.user.id);
-    workbooks.value = response;
+    const userId = authStore.user.id;
+    
+    // 내 문제집과 공유받은 문제집을 동시에 로드
+    await Promise.all([
+      workbookAPI.getAllByUserId(userId),
+      workbookStore.loadSharedWorkbooks(userId)
+    ]);
+
+    // 각 문제집의 문제 수 로드
+    const myWorkbooks = await workbookAPI.getAllByUserId(userId);
+    const sharedWorkbooks = workbookStore.sharedWorkbooks;
+    
+    // 모든 문제집에 대해 문제 수 로드
+    const allWorkbooks = [...myWorkbooks, ...sharedWorkbooks];
+    await Promise.all(
+      allWorkbooks.map(async (workbook) => {
+        await workbookStore.fetchProblemCount(workbook.id);
+      })
+    );
+
+    // 문제 수가 0개인 문제집 필터링
+    workbooks.value = allWorkbooks.filter(
+      workbook => workbookStore.problemCounts[workbook.id] > 0
+    );
   } catch (error) {
     console.error("문제집 로드 실패:", error);
   }
