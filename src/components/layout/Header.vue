@@ -1,5 +1,5 @@
 <script setup>
-import { ref, watch, onBeforeMount } from "vue";
+import { ref, watch, onBeforeMount, watchEffect } from "vue";
 import { useRouter } from "vue-router";
 import Menu from "primevue/menu";
 import LoginModal from "./LoginModal.vue";
@@ -8,10 +8,12 @@ import { userAPI } from "@/api/user";
 import { useAuthStore } from "@/store/authStore";
 import { storeToRefs } from "pinia";
 import { RouterLink } from "vue-router";
+import { useRoute } from "vue-router";
 
 const pointPath = new URL("@/assets/icons/point.svg", import.meta.url).href;
 
 const router = useRouter();
+const route = useRoute();
 
 // 유저 정보
 const authStore = useAuthStore();
@@ -62,11 +64,9 @@ onBeforeMount(async () => {
 });
 
 watch(
-  () => user.value,
-  async (user) => {
-    if (user) {
-      userInfo.value = await userAPI.getOne(user.id);
-    }
+  () => route.path,
+  async () => {
+    userInfo.value = await userAPI.getOne(user.value.id);
   },
   { immediate: true },
 );

@@ -1,4 +1,3 @@
-import { useAuthStore } from "@/store/authStore.js";
 import { supabase } from "./index.js";
 
 const getAll = async () => {
