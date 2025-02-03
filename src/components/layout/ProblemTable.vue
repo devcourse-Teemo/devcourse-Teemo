@@ -94,6 +94,7 @@ const confirm = useConfirm();
 const authStore = useAuthStore();
 const { user } = storeToRefs(authStore);
 
+let isSortRouting = false;
 const currentSort = route.query.sort === SORT.likes ? SORTS[1] : SORTS[0];
 
 const popup = ref(null);
@@ -262,13 +263,26 @@ watch(
   },
 );
 
+watch(
+  () => route.query,
+  () => {
+    console.log(route.query);
+  },
+);
+
 watch(sort, (newSort) => {
+  isSortRouting = true;
   first.value = 0;
   const newQuery = { ...route.query, sort: newSort.value };
-  router.replace({ query: newQuery, page: 1 });
+  router.replace({ query: { ...newQuery, page: 1 } });
 });
 
 watch(first, (newFirst) => {
+  if (isSortRouting) {
+    isSortRouting = false;
+    return;
+  }
+
   const page = newFirst / rows.value + 1;
   const newQuery = { ...route.query, page };
   router.replace({ query: newQuery });
