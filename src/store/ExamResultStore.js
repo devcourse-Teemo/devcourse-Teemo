@@ -44,7 +44,10 @@ export const useExamResultStore = defineStore("examResult", {
   actions: {
     //시험점수 가져오기
     async initializeExamData(uid, testResultId) {
-      if (this.isInitializing) return;
+      console.log("테스트테스트", { uid, testResultId });
+      if (this.isInitializing) {
+        this.isInitializing = false;
+      }
       this.isInitializing = true;
       try {
         // uid 및 testResultId 유효성 검사
@@ -55,10 +58,13 @@ export const useExamResultStore = defineStore("examResult", {
           });
           return;
         }
-
+        console.log("testResultAPI.getScore 호출");
         // 점수 데이터 호출
-        const { total, correct } = await testResultAPI.getScore(testResultId);
-
+        const { total, correct } = await testResultAPI.getScore(
+          testResultId,
+          uid,
+        );
+        console.log("testResultAPI.getScore 응답:", { total, correct });
         // 상태 업데이트
         this.totalCount = total;
         this.correctCount = correct;

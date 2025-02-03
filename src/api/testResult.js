@@ -142,38 +142,41 @@ const search = async (userId, keyword, startDate, endDate) => {
 };
 
 // 내 시험 점수
-const getScore = async (testResultId) => {
+const getScore = async (testResultId, uid) => {
   try {
-    if (!testResultId) {
-      console.error("유효하지 않은 testResultId:", testResultId);
+    if (!testResultId || !uid) {
+      console.error("유효하지 않은 testResultId 또는 uid:", {
+        testResultId,
+        uid,
+      });
       return { total: 0, correct: 0 };
     }
 
     const { data, error } = await supabase
       .from("test_result")
       .select("correct_count, total_count")
-      .eq("id", testResultId);
-
+      .eq("id", testResultId)
+      .eq("uid", uid)
+      .single();
     if (error) throw error;
 
-    if (!data || data.length === 0) {
-      console.warn("데이터가 없습니다. testResultId:", testResultId);
+    if (!data) {
+      console.warn(
+        "데이터가 없습니다. testResultId:",
+        testResultId,
+        "uid:",
+        uid,
+      );
       return { total: 0, correct: 0 };
     }
 
-    const result = data.reduce(
-      (acc, row) => {
-        acc.total += row.total_count || 0;
-        acc.correct += row.correct_count || 0;
-        return acc;
-      },
-      { total: 0, correct: 0 },
-    );
-
-    return result;
+    return {
+      total: data.total_count || 0,
+      correct: data.correct_count || 0,
+    };
   } catch (error) {
     console.error("Error fetching score:", error);
-    return;
+    return { total: 0, correct: 0 };
   }
 };
 

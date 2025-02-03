@@ -51,6 +51,7 @@ export const fetchProblemsForTestResult = async (testResultId) => {
       .select(
         `
         id,
+        title,
         question,
         answer,
         explanation,
