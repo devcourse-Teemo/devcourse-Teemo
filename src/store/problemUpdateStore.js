@@ -2,7 +2,6 @@ import { defineStore } from "pinia";
 import { ref, computed } from "vue";
 import { problemAPI } from "@/api/problem";
 import { useToast } from "primevue/usetoast";
-import { useConfirm } from "primevue/useconfirm";
 
 const emptyProblem = {
   title: "",
@@ -49,7 +48,6 @@ const validateField = (field, value) => {
 
 export const useProblemUpdateStore = defineStore("problemUpdate", () => {
   const toast = useToast();
-  const confirm = useConfirm();
   const isLoading = ref(false);
   const originalProblem = ref(null);
   const editedProblem = ref({ ...emptyProblem });
@@ -108,11 +106,11 @@ export const useProblemUpdateStore = defineStore("problemUpdate", () => {
     }
 
     if (missingFields.length > 0) {
-      confirm.require({
-        message: `필수 항목이 누락되었습니다 : ${missingFields.join(", ")}`,
-        header: "필수 입력 확인",
-        rejectVisible: false, 
-        accept: () => {},
+      toast.add({
+        severity: "warn",
+        summary: "필수 입력 확인",
+        detail: `필수 항목이 누락되었습니다 : ${missingFields.join(", ")}`,
+        life: 3000,
       });
       return false;
     }
