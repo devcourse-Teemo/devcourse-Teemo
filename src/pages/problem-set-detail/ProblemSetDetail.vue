@@ -1,7 +1,7 @@
 <script setup>
 import { ref, onMounted } from "vue";
 import { useRoute, useRouter } from "vue-router";
-import { Menu, useConfirm, useToast } from "primevue";
+import { Menu, useToast } from "primevue";
 
 import { userAPI } from "@/api/user";
 import { authAPI } from "@/api/auth";
