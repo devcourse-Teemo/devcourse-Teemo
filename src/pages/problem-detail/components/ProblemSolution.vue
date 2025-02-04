@@ -3,7 +3,7 @@ import { ref, onMounted, watch, nextTick, watchEffect } from "vue";
 import Viewer from "@toast-ui/editor/dist/toastui-editor-viewer";
 import "@toast-ui/editor/dist/toastui-editor-viewer.css";
 import { chatCompletion } from "@/api/openai";
-import { useToast } from "primevue/usetoast"; 
+import { useToast } from "primevue/usetoast";
 
 const props = defineProps({
   title: String,
@@ -56,7 +56,7 @@ const getGptExplanation = async () => {
     풀이 방법과 해설을 자세히 제공해주세요.
     같은 문제에 대해서는 항상 같은 풀이를 제공해야 합니다.
     정확한 근거에 의해 풀이 방법과 해설을 제공하고, 근거를 찾을 수 없는 경우 추측됩니다 등의 내용을 포함해주세요.
-    정답은 항상 ${currentProblem.value.answer}와 같아야 합니다.`;
+    정답은 항상 ${props.answer}와 같아야 합니다.`;
 
     const response = await chatCompletion([{ role: "user", content: prompt }]);
     gptExplanation.value = response.content;
