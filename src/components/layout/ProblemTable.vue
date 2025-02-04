@@ -272,11 +272,6 @@ watch(
   },
 );
 
-watch(
-  () => route.query,
-  () => {},
-);
-
 watch(sort, (newSort) => {
   isSortRouting = true;
   first.value = 0;
