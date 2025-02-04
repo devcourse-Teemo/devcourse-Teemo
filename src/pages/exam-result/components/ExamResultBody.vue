@@ -1,18 +1,27 @@
 <script setup>
-import allProblem from "@/assets/icons/exam-result/allProblem.svg";
-import correctedProblem from "@/assets/icons/exam-result/correctProblem.svg";
-import average from "@/assets/icons/exam-result/average.svg";
+// APIs
+import { supabase } from "@/api";
+import { testResultAPI } from "@/api/testResult";
+
+// Components
 import ExamResultChart from "./ExamResultChart.vue";
 import ExamResultTable from "./ExamResultTable.vue";
 import ExamResultProblems from "./ExamResultProblems.vue";
 
-import { ref, watch } from "vue";
+// Icons
+import average from "@/assets/icons/exam-result/average.svg";
+import allProblem from "@/assets/icons/exam-result/allProblem.svg";
+import correctedProblem from "@/assets/icons/exam-result/correctProblem.svg";
+
+// Store
 import { storeToRefs } from "pinia";
+
 import { useAuthStore } from "@/store/authStore";
 import { useExamResultStore } from "@/store/ExamResultStore";
+
+// Vue Core
+import { ref, watch } from "vue";
 import { useRoute } from "vue-router";
-import { testResultAPI } from "@/api/testResult";
-import { supabase } from "@/api";
 
 const authStore = useAuthStore();
 const examResultStore = useExamResultStore();
@@ -99,11 +108,11 @@ supabase
       <div
         class="flex items-center pl-8 pr-4 pb-10 pt-4 bg-white border border-[#D4D4D4] rounded-2xl text-start overflow-hidden"
       >
-        <div class="space-y-1 flex-shrink-0">
+        <div class="flex-shrink-0 space-y-1">
           <p class="text-lg">전체 문제</p>
           <span class="text-5xl">{{ totalCount }}</span>
         </div>
-        <div class="flex items-center pt-8 pl-12 flex-shrink-0 translate-x-7">
+        <div class="flex items-center flex-shrink-0 pt-8 pl-12 translate-x-7">
           <img :src="allProblem" alt="전체문제" />
         </div>
       </div>
@@ -111,22 +120,22 @@ supabase
       <div
         class="flex items-center pl-8 pr-4 pb-10 pt-4 gap-16 bg-white border border-[#D4D4D4] rounded-2xl text-start overflow-hidden"
       >
-        <div class="space-y-1 flex-shrink-0">
+        <div class="flex-shrink-0 space-y-1">
           <p class="text-lg">맞힌 문제</p>
           <span class="text-5xl">{{ correctCount }}</span>
         </div>
-        <div class="flex items-center pt-8 ml-1 flex-shrink-0 translate-x-7">
+        <div class="flex items-center flex-shrink-0 pt-8 ml-1 translate-x-7">
           <img :src="correctedProblem" alt="맞힌 문제" />
         </div>
       </div>
       <div
         class="flex items-center pl-8 pr-4 pb-10 pt-4 gap-4 bg-white border border-[#D4D4D4] rounded-2xl text-start overflow-hidden"
       >
-        <div class="space-y-1 flex-shrink-0">
+        <div class="flex-shrink-0 space-y-1">
           <p class="text-lg">평균 정답 갯수</p>
           <span class="text-5xl">{{ averageCount }}</span>
         </div>
-        <div class="flex items-center pt-8 flex-shrink-0 translate-x-7">
+        <div class="flex items-center flex-shrink-0 pt-8 translate-x-7">
           <img :src="average" alt="평균정답갯수" />
         </div>
       </div>
@@ -145,7 +154,7 @@ supabase
         <h3 class="font-bold text-gray-700">문제 풀이 보기</h3>
         <svg
           xmlns="http://www.w3.org/2000/svg"
-          class="h-6 w-6 text-gray-600 transition-transform duration-300 ease-in-out"
+          class="w-6 h-6 text-gray-600 transition-transform duration-300 ease-in-out"
           :class="{ 'rotate-90': !isCollapsed }"
           fill="none"
           viewBox="0 0 24 24"
@@ -180,7 +189,7 @@ supabase
         <h3 class="font-bold text-gray-700">다른 사용자 점수 보기</h3>
         <svg
           xmlns="http://www.w3.org/2000/svg"
-          class="h-6 w-6 text-gray-600 transition-transform transform duration-300 ease-in-out"
+          class="w-6 h-6 text-gray-600 transition-transform duration-300 ease-in-out transform"
           fill="none"
           viewBox="0 0 24 24"
           stroke="currentColor"
@@ -196,21 +205,21 @@ supabase
       </div>
       <!--점수 테이블 -->
       <div v-if="isShowed">
-        <table class="w-full table-auto border-collapse">
+        <table class="w-full border-collapse table-auto">
           <thead>
             <tr>
-              <th class="border-t border-b border-r border-gray-300 px-1 py-1">
+              <th class="px-1 py-1 border-t border-b border-r border-gray-300">
                 Name
               </th>
-              <th class="border-t border-b border-gray-300 px-1 py-1">Score</th>
+              <th class="px-1 py-1 border-t border-b border-gray-300">Score</th>
             </tr>
           </thead>
           <tbody>
             <tr v-for="item in isTableData" :key="item.uid">
-              <td class="border-t border-r border-gray-300 text-center">
+              <td class="text-center border-t border-r border-gray-300">
                 {{ item.userName }}
               </td>
-              <td class="border-t border-gray-300 px-1 py-1 text-center">
+              <td class="px-1 py-1 text-center border-t border-gray-300">
                 {{ item.correct_count }}
               </td>
             </tr>

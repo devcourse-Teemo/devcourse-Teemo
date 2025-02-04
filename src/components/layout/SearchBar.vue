@@ -1,39 +1,49 @@
 <script setup>
-import { ref, watch } from 'vue';
-import { Chip } from 'primevue';
+// Icons
 import searchIcon from "@/assets/icons/problem-set-board/search.svg";
+
+// PrimeVue
+import { Chip } from "primevue";
+
+// Vue Core
+import { ref, watch } from "vue";
 
 const props = defineProps({
   modelValue: {
     type: String,
-    default: ''
-  }
+    default: "",
+  },
 });
 
-const emit = defineEmits(['search', 'update:modelValue']);
+const emit = defineEmits(["search", "update:modelValue"]);
 const searchTerm = ref(props.modelValue);
 const showChip = ref(false);
 
 const handleSearch = () => {
   if (searchTerm.value.trim()) {
     showChip.value = true;
-    emit('search', searchTerm.value);
+    emit("search", searchTerm.value);
   }
 };
 
 const removeChip = () => {
   showChip.value = false;
-  searchTerm.value = '';
-  emit('search', '');
+  searchTerm.value = "";
+  emit("search", "");
 };
 
-watch(() => props.modelValue, (newValue) => {
-  searchTerm.value = newValue;
-});
+watch(
+  () => props.modelValue,
+  (newValue) => {
+    searchTerm.value = newValue;
+  },
+);
 </script>
 
 <template>
-  <div class="relative flex items-center justify-between bg-beige-2 rounded-xl h-12 py-4 px-3 border border-black-4">
+  <div
+    class="relative flex items-center justify-between h-12 px-3 py-4 border bg-beige-2 rounded-xl border-black-4"
+  >
     <input
       v-if="!showChip"
       v-model="searchTerm"
@@ -49,7 +59,7 @@ watch(() => props.modelValue, (newValue) => {
       @remove="removeChip"
       class="flex-1 !w-fit"
     />
-    <button @click="handleSearch" class="bg-transparent ml-2 item-middle">
+    <button @click="handleSearch" class="ml-2 bg-transparent item-middle">
       <img :src="searchIcon" alt="검색 아이콘" />
     </button>
   </div>
@@ -57,7 +67,7 @@ watch(() => props.modelValue, (newValue) => {
 
 <style scoped>
 :deep(.p-chip) {
-  background: rgba(0,0,0,0.05);
+  background: rgba(0, 0, 0, 0.05);
   max-width: max-content !important;
 }
 

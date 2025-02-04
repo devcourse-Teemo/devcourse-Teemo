@@ -1,15 +1,17 @@
 import { createApp } from "vue";
 import { createPinia } from "pinia";
-import "./assets/css/index.css";
+import "primeicons/primeicons.css";
+import Tooltip from "primevue/tooltip";
+import PrimeVue from "primevue/config";
+import { ConfirmationService } from "primevue";
+import ToastService from "primevue/toastservice";
+import piniaPluginPersistedstate from "pinia-plugin-persistedstate";
+
 import App from "./App.vue";
 import router from "./router";
-import PrimeVue from "primevue/config";
+import "./assets/css/index.css";
+
 import Aura from "@primevue/themes/aura";
-import "primeicons/primeicons.css";
-import ToastService from "primevue/toastservice";
-import Tooltip from "primevue/tooltip";
-import { ConfirmationService } from "primevue";
-import piniaPluginPersistedstate from "pinia-plugin-persistedstate";
 
 const pinia = createPinia();
 pinia.use(piniaPluginPersistedstate);

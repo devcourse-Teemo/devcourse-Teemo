@@ -1,12 +1,19 @@
 <script setup>
+// PrimeVue
 import { Button, useToast } from "primevue";
+
+// Store
 import { storeToRefs } from "pinia";
-import { watch, computed, onMounted } from "vue";
-import { useRoute } from "vue-router";
-import { useExamResultStore } from "@/store/ExamResultStore";
 import { useAuthStore } from "@/store/authStore";
-import Viewer from "@toast-ui/editor/dist/toastui-editor-viewer";
+import { useExamResultStore } from "@/store/ExamResultStore";
+
+// toastui
 import "@toast-ui/editor/dist/toastui-editor-viewer.css";
+import Viewer from "@toast-ui/editor/dist/toastui-editor-viewer";
+
+// Vue Core
+import { useRoute } from "vue-router";
+import { watch, computed, onMounted } from "vue";
 
 const route = useRoute();
 const toast = useToast();
@@ -155,15 +162,15 @@ watch(
 </script>
 
 <template>
-  <div class="bg-white p-6 rounded-lg w-full mx-auto">
+  <div class="w-full p-6 mx-auto bg-white rounded-lg">
     <template v-if="examResultStore.isLoading">
-      <div class="text-center py-10 text-gray-500">
+      <div class="py-10 text-center text-gray-500">
         문제를 불러오는 중입니다...
       </div>
     </template>
 
     <template v-else-if="examResultStore.error">
-      <div class="text-red-500 text-center py-10">
+      <div class="py-10 text-center text-red-500">
         {{ examResultStore.error }}
       </div>
     </template>
@@ -198,14 +205,14 @@ watch(
             />
           </div>
 
-          <div id="viewer" class="text-gray-700 min-h-4 mb-10 w-full"></div>
+          <div id="viewer" class="w-full mb-10 text-gray-700 min-h-4"></div>
 
           <div v-if="currentProblem.image_src" class="flex justify-center mb-6">
             <img
               :src="currentProblem.image_src"
               :alt="`문제 ${currentProblem.number} 이미지`"
               loading="lazy"
-              class="max-w-full h-auto rounded-lg shadow-md"
+              class="h-auto max-w-full rounded-lg shadow-md"
             />
           </div>
 
@@ -213,13 +220,13 @@ watch(
             v-if="currentProblem.problem_type === 'multiple_choice'"
             class="space-y-4"
           >
-            <ol class="list-decimal text-gray-700">
+            <ol class="text-gray-700 list-decimal">
               <li
                 v-if="currentProblem.options[0]"
                 class="flex items-center gap-2 mb-8 last:mb-0"
               >
                 <span
-                  class="font-medium text-lg rounded-full bg-black-6 w-8 h-8 item-middle"
+                  class="w-8 h-8 text-lg font-medium rounded-full bg-black-6 item-middle"
                   >1</span
                 >
                 <span>{{ currentProblem.options[0] }}</span>
@@ -229,7 +236,7 @@ watch(
                 class="flex items-center gap-2 mb-8 last:mb-0"
               >
                 <span
-                  class="font-medium text-lg rounded-full bg-black-6 w-8 h-8 item-middle"
+                  class="w-8 h-8 text-lg font-medium rounded-full bg-black-6 item-middle"
                   >2</span
                 >
                 <span>{{ currentProblem.options[1] }}</span>
@@ -239,7 +246,7 @@ watch(
                 class="flex items-center gap-2 mb-8 last:mb-0"
               >
                 <span
-                  class="font-medium text-lg rounded-full bg-black-6 w-8 h-8 item-middle"
+                  class="w-8 h-8 text-lg font-medium rounded-full bg-black-6 item-middle"
                   >3</span
                 >
                 <span>{{ currentProblem.options[2] }}</span>
@@ -249,7 +256,7 @@ watch(
                 class="flex items-center gap-2 mb-8 last:mb-0"
               >
                 <span
-                  class="font-medium text-lg rounded-full bg-black-6 w-8 h-8 item-middle"
+                  class="w-8 h-8 text-lg font-medium rounded-full bg-black-6 item-middle"
                   >4</span
                 >
                 <span>{{ currentProblem.options[3] }}</span>
@@ -258,11 +265,11 @@ watch(
           </div>
 
           <div class="mt-8">
-            <h3 class="font-bold text-lg mb-2">내 선택</h3>
-            <div class="flex items-center gap-4 border-b pb-4">
+            <h3 class="mb-2 text-lg font-bold">내 선택</h3>
+            <div class="flex items-center gap-4 pb-4 border-b">
               <template v-if="currentProblem">
                 <div
-                  class="font-medium w-8 h-8 flex items-center justify-center rounded-full bg-gray-200 text-black"
+                  class="flex items-center justify-center w-8 h-8 font-medium text-black bg-gray-200 rounded-full"
                 >
                   {{ selectedMyOption }}
                 </div>
@@ -281,7 +288,7 @@ watch(
                 >
                   오답
                 </span>
-                <p v-else class="text-gray-800 flex-grow">
+                <p v-else class="flex-grow text-gray-800">
                   아직 답안을 선택하지 않았습니다.
                 </p>
               </template>
@@ -289,10 +296,10 @@ watch(
           </div>
 
           <div class="mt-4">
-            <h3 class="font-bold text-lg mb-3">정답</h3>
+            <h3 class="mb-3 text-lg font-bold">정답</h3>
             <div class="flex items-start gap-3">
               <span
-                class="shrink-0 w-8 h-8 flex items-center justify-center rounded-full bg-orange-3 text-red-1 font-bold"
+                class="flex items-center justify-center w-8 h-8 font-bold rounded-full shrink-0 bg-orange-3 text-red-1"
                 :class="{
                   'w-10 h-10': currentProblem.answer >= 10,
                   'text-sm': currentProblem.answer >= 10,
@@ -302,7 +309,7 @@ watch(
               </span>
 
               <div class="flex-1">
-                <p class="text-gray-800 font-medium leading-relaxed">
+                <p class="font-medium leading-relaxed text-gray-800">
                   {{ currentProblem.options[currentProblem.answer - 1] }}
                 </p>
               </div>
@@ -311,17 +318,17 @@ watch(
 
           <div
             v-if="currentProblem.explanation"
-            class="bg-gray-50 p-4 mt-4 rounded-lg"
+            class="p-4 mt-4 rounded-lg bg-gray-50"
           >
-            <h3 class="font-bold text-lg mb-2 text-gray-700">상세 풀이</h3>
+            <h3 class="mb-2 text-lg font-bold text-gray-700">상세 풀이</h3>
             <div
               id="explanationViewer"
-              class="text-gray-600 leading-relaxed"
+              class="leading-relaxed text-gray-600"
             ></div>
           </div>
         </div>
       </div>
-      <div v-else class="text-center py-10 text-gray-500">
+      <div v-else class="py-10 text-center text-gray-500">
         표시할 문제가 없습니다
       </div>
     </template>

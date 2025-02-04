@@ -1,13 +1,22 @@
 <script setup>
+// Apis
 import { problemAPI } from "@/api/problem";
-import ProblemTable from "@/components/layout/ProblemTable.vue";
+
+// Components
 import Search from "@/components/layout/Search.vue";
-import { ref, onBeforeMount } from "vue";
-import { formatDate } from "@/utils/formatDate";
-import { useAuthStore } from "@/store/authStore";
+import ProblemTable from "@/components/layout/ProblemTable.vue";
+
+// Store
 import { storeToRefs } from "pinia";
-import { useRouter } from "vue-router";
-import { useRoute } from "vue-router";
+
+import { useAuthStore } from "@/store/authStore";
+
+// Utils
+import { formatDate } from "@/utils/formatDate";
+
+// Vue Core
+import { ref, onBeforeMount } from "vue";
+import { useRoute, useRouter } from "vue-router";
 
 const route = useRoute();
 const router = useRouter();

@@ -1,8 +1,11 @@
 <script setup>
-import { computed, watch } from "vue";
+// Store
 import { storeToRefs } from "pinia";
-import { useExamResultStore } from "@/store/ExamResultStore";
 import { useAuthStore } from "@/store/authStore";
+import { useExamResultStore } from "@/store/ExamResultStore";
+
+// Vue Core
+import { computed, watch } from "vue";
 
 const examResultStore = useExamResultStore();
 const authStore = useAuthStore();
@@ -70,7 +73,7 @@ watch(
               <td
                 v-for="(cell, colIndex) in row"
                 :key="'status-cell-' + colIndex"
-                class="cell flag-cell text-center font-bold"
+                class="font-bold text-center cell flag-cell"
               >
                 <span
                   v-if="

@@ -1,12 +1,19 @@
 <script setup>
-import { watch, watchEffect } from "vue";
-import { useRoute } from "vue-router";
+// Components
+import ProblemBoardUpdateHeader from "./components/ProblemBoardUpdateHeader.vue";
+import ProblemBoardUpdateContent from "./components/ProblemBoardUpdateContent.vue";
+import ProblemBoardUpdateSolution from "./components/ProblemBoardUpdateSolution.vue";
+
+// Prime Vue
+import { ConfirmDialog } from "primevue";
+
+// Store
 import { useProblemStore } from "@/store/problemStore";
 import { useProblemUpdateStore } from "@/store/problemUpdateStore";
-import { ConfirmDialog } from "primevue";
-import ProblemBoardUpdateSolution from "./components/ProblemBoardUpdateSolution.vue";
-import ProblemBoardUpdateContent from "./components/ProblemBoardUpdateContent.vue";
-import ProblemBoardUpdateHeader from "./components/ProblemBoardUpdateHeader.vue";
+
+// Vue Core
+import { useRoute } from "vue-router";
+import { watch, watchEffect } from "vue";
 
 const route = useRoute();
 const problemStore = useProblemStore();
@@ -36,7 +43,7 @@ watch(
 </script>
 
 <template>
-  <div class="max-w-4xl mx-auto p-6">
+  <div class="max-w-4xl p-6 mx-auto">
     <ProblemBoardUpdateHeader
       :problem="problemStore.problem"
       :author="problemStore.author"

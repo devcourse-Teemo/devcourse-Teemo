@@ -1,7 +1,10 @@
 <script setup>
-import { ref, onMounted, watch, nextTick } from "vue";
-import Viewer from "@toast-ui/editor/dist/toastui-editor-viewer";
+// toastui
 import "@toast-ui/editor/dist/toastui-editor-viewer.css";
+import Viewer from "@toast-ui/editor/dist/toastui-editor-viewer";
+
+// Vue Core
+import { ref, onMounted, watch, nextTick } from "vue";
 
 const props = defineProps({
   answer: String,
@@ -60,10 +63,10 @@ watch(isOpen, (newValue) => {
 </script>
 
 <template>
-  <div class="w-full rounded-lg bg-black-3/15 px-4 mb-4 py-4">
+  <div class="w-full px-4 py-4 mb-4 rounded-lg bg-black-3/15">
     <div
       @click="toggleAccordion"
-      class="cursor-pointer flex justify-between items-center"
+      class="flex items-center justify-between cursor-pointer"
     >
       <span class="text-lg font-semibold text-black-2">풀이와 답 보기</span>
       <svg
@@ -86,14 +89,14 @@ watch(isOpen, (newValue) => {
       </svg>
     </div>
 
-    <div v-if="isOpen" class="p-4 border-t border-b border-gray-300 mt-4">
-      <h4 class="text-lg font-semibold text-black-2 mb-4">정답</h4>
+    <div v-if="isOpen" class="p-4 mt-4 border-t border-b border-gray-300">
+      <h4 class="mb-4 text-lg font-semibold text-black-2">정답</h4>
       <p class="text-gray-700">
         {{ answer || "답이 없습니다." }}
       </p>
     </div>
     <div v-if="isOpen" class="p-4 pb-0">
-      <h4 class="text-lg font-semibold text-black-2 mb-4">문제 해설</h4>
+      <h4 class="mb-4 text-lg font-semibold text-black-2">문제 해설</h4>
       <div v-if="explanation" ref="viewerRef"></div>
       <p v-else class="text-gray-700">해설이 없습니다.</p>
     </div>
@@ -102,7 +105,7 @@ watch(isOpen, (newValue) => {
   <!-- 출처  -->
   <p
     v-if="source"
-    class="text-gray-500 mt-4 p-4 border-b border-gray-300 mb-10"
+    class="p-4 mt-4 mb-10 text-gray-500 border-b border-gray-300"
   >
     출처 | {{ source }}
   </p>

@@ -1,7 +1,14 @@
 <script setup>
+// APIs
 import { userAPI } from "@/api/user";
-import { getCurrentGradeInfo } from "@/utils/getCurrentGradeInfo";
+
+// PrimeVue
 import { ProgressBar } from "primevue";
+
+// Utils
+import { getCurrentGradeInfo } from "@/utils/getCurrentGradeInfo";
+
+// Vue Core
 import { ref, watchEffect } from "vue";
 
 const { userId } = defineProps({
@@ -28,7 +35,7 @@ watchEffect(() => {
   >
     <div class="flex flex-col justify-between">
       <div>
-        <p class="font-semibold text-2xl text-black-2 mb-8">
+        <p class="mb-8 text-2xl font-semibold text-black-2">
           현재 등급은
           <span>"</span>
           <span class="text-orange-1">
@@ -38,7 +45,7 @@ watchEffect(() => {
         </p>
         <p class="text-lg">
           현재 포인트
-          <span class="font-semibold text-orange-1 ml-1">{{ points }}</span>
+          <span class="ml-1 font-semibold text-orange-1">{{ points }}</span>
         </p>
         <ProgressBar
           class="min-w-[30rem] min-h-10"
@@ -50,14 +57,14 @@ watchEffect(() => {
         </ProgressBar>
       </div>
       <div class="flex items-center gap-4">
-        <p class="flex text-sm gap-2">
+        <p class="flex gap-2 text-sm">
           <span class="font-semibold">현재 권한:</span>
           <span>시험장 {{ gradeInfo?.current?.examLimit }}개</span>
           <span>|</span>
           <span>문제집 {{ gradeInfo?.current?.problemSetLimit }}개</span>
         </p>
         <span class="pi pi-arrow-right" style="font-size: 14px"></span>
-        <p class="flex text-sm gap-2">
+        <p class="flex gap-2 text-sm">
           <span class="font-semibold">다음 권한:</span>
           <span>시험장 {{ gradeInfo?.next?.examLimit }}개</span>
           <span>|</span>

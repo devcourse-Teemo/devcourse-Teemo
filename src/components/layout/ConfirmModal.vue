@@ -1,4 +1,5 @@
 <script setup>
+// PrimeVue
 import { Button, ConfirmDialog } from "primevue";
 
 const props = defineProps({

@@ -1,13 +1,24 @@
 <script setup>
-import { ref, watchEffect } from "vue";
-import { useToast } from "primevue/usetoast";
-import { useAuthStore } from "@/store/authStore";
-import InputText from "primevue/inputtext";
-import Button from "primevue/button";
-import UserListItem from "./UserListItem.vue";
-import searchIcon from "@/assets/icons/search-icon.svg";
-import { followAPI } from "@/api/follow";
+// APIs
 import { userAPI } from "@/api/user";
+import { followAPI } from "@/api/follow";
+
+// Components
+import UserListItem from "./UserListItem.vue";
+
+// Icons
+import searchIcon from "@/assets/icons/search-icon.svg";
+
+// PrimeVue
+import Button from "primevue/button";
+import InputText from "primevue/inputtext";
+import { useToast } from "primevue/usetoast";
+
+// Store
+import { useAuthStore } from "@/store/authStore";
+
+// Vue Core
+import { ref, watchEffect } from "vue";
 
 const props = defineProps({
   participants: {
@@ -203,12 +214,12 @@ watchEffect(() => {
 </script>
 
 <template>
-  <h2 class="text-2xl text-black-1 font-medium mb-6">시험장 초대하기</h2>
+  <h2 class="mb-6 text-2xl font-medium text-black-1">시험장 초대하기</h2>
 
   <div class="flex justify-center gap-6 h-[400px] mb-6">
     <!-- 검색 및 팔로잉 목록 -->
-    <div class="w-full h-full flex-col flex gap-6">
-      <div class="flex shrink-0 relative">
+    <div class="flex flex-col w-full h-full gap-6">
+      <div class="relative flex shrink-0">
         <InputText
           v-model="newParticipant"
           placeholder="이메일 주소를 입력하세요"
@@ -225,11 +236,11 @@ watchEffect(() => {
       </div>
 
       <section
-        class="rounded-xl bg-beige-1 w-full px-5 py-3 h-full flex-1 overflow-y-auto"
+        class="flex-1 w-full h-full px-5 py-3 overflow-y-auto rounded-xl bg-beige-1"
       >
         <!-- 검색 결과 -->
         <div v-if="searchResults?.length" class="mb-4">
-          <h4 class="font-semibold mb-4">검색 결과</h4>
+          <h4 class="mb-4 font-semibold">검색 결과</h4>
           <ul class="divide-y divide-gray-100">
             <UserListItem
               v-for="user in searchResults"
@@ -245,7 +256,7 @@ watchEffect(() => {
         </div>
 
         <!-- 팔로잉 목록 -->
-        <h4 class="font-semibold mb-4">팔로잉</h4>
+        <h4 class="mb-4 font-semibold">팔로잉</h4>
         <div class="overflow-auto">
           <div
             v-if="followingUsers.length === 0"
@@ -274,10 +285,10 @@ watchEffect(() => {
 
     <!-- 초대된 참가자 목록 -->
     <section
-      class="rounded-xl bg-beige-1 w-full px-5 py-3 h-full flex flex-col"
+      class="flex flex-col w-full h-full px-5 py-3 rounded-xl bg-beige-1"
     >
-      <h4 class="font-medium mb-4">초대된 참가자</h4>
-      <ul class="overflow-auto divide-y divide-gray-100 flex-grow">
+      <h4 class="mb-4 font-medium">초대된 참가자</h4>
+      <ul class="flex-grow overflow-auto divide-y divide-gray-100">
         <UserListItem
           v-for="user in selectedUsers"
           :key="user.email"

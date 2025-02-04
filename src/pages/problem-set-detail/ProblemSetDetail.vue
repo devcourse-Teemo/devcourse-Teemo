@@ -1,19 +1,28 @@
 <script setup>
-import { ref, onMounted } from "vue";
-import { useRoute, useRouter } from "vue-router";
-import { Menu, useToast } from "primevue";
-
+// APIs
 import { userAPI } from "@/api/user";
 import { authAPI } from "@/api/auth";
 import { workbookAPI } from "@/api/workbook";
 import { testCenterAPI } from "@/api/testCenter";
 import { workbookLikeAPI } from "@/api/workbookLike";
+
+// Components
 import ProblemTable from "@/components/layout/ProblemTable.vue";
+import CommentList from "@/pages/problem-set-detail/components/CommentList.vue";
+
+// Icons
 import like from "@/assets/icons/problem-set-board-detail/like.svg";
 import thumbsUp from "@/assets/icons/problem-set-board-detail/thumbs-up.svg";
+import bookMark from "@/assets/icons/problem-set-board-detail/book-mark.svg";
 import addOption from "@/assets/icons/problem-set-board-detail/add-option.svg";
-import CommentList from "@/pages/problem-set-detail/components/CommentList.vue";
 import testCenterEnter from "@/assets/icons/problem-set-board-detail/test-center-enter.svg";
+
+// PrimeVue
+import { Menu, useToast } from "primevue";
+
+// Vue Core
+import { ref, onMounted } from "vue";
+import { useRoute, useRouter } from "vue-router";
 
 const toast = useToast();
 const route = useRoute();
@@ -213,7 +222,7 @@ onMounted(async () => {
 <template>
   <div class="flex flex-col items-center w-full">
     <div class="h-[124px] flex items-center mb-[63px] w-full justify-between">
-      <div class="flex">
+      <div class="flex items-center">
         <div
           class="w-[124px] h-[124px] mr-[21px]"
           v-if="workbookUserCheck || workbookShared"
@@ -225,14 +234,14 @@ onMounted(async () => {
           </RouterLink>
         </div>
 
-        <div class="flex flex-col justify-between h-[77px]">
+        <div class="flex flex-col justify-between">
           <div
             class="font-laundry text-[36px] -tracking[1.1%] font-semibold my-3"
           >
             {{ title }}
           </div>
-          <div class="w-[700px] break-all">{{ description }}</div>
-          <div class="flex w-[473px] h-[23px] justify-between">
+          <div class="w-[650px] break-all">{{ description }}</div>
+          <div class="w-[500px] flex h-[23px] justify-between">
             <div>작성자 | {{ name }}</div>
             <div>생성일 | {{ created_at }}</div>
             <div>수정일 | {{ updated_at }}</div>
@@ -257,7 +266,7 @@ onMounted(async () => {
         </button>
       </div>
 
-      <div class="flex" v-if="!workbookUserCheck">
+      <div class="flex justify-between w-40" v-if="!workbookUserCheck">
         <button
           @click="handleLike"
           class="px-2 py-2 transition rounded-full item-middle w-14 h-14"
@@ -279,12 +288,12 @@ onMounted(async () => {
             workbookShared ? 'bg-orange-100 text-orange-1' : 'hover:bg-gray-100'
           "
         >
-          <i
-            class="w-10 h-10 pi pi-bookmark"
+          <img
+            :src="bookMark"
             alt="공유받기"
-            style="font-size: 32px"
+            class="w-10 h-10"
             :class="{ 'opacity-50': !workbookShared }"
-          ></i>
+          />
         </button>
       </div>
     </div>

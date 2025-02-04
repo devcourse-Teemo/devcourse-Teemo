@@ -1,8 +1,13 @@
 <script setup>
-import { ref, watch, nextTick, onMounted } from "vue";
+// Store
+import { useProblemUpdateStore } from "@/store/problemUpdateStore";
+
+// toastui
 import Editor from "@toast-ui/editor";
 import "@toast-ui/editor/dist/toastui-editor.css";
-import { useProblemUpdateStore } from "@/store/problemUpdateStore";
+
+// Vue Core
+import { ref, watch, nextTick, onMounted } from "vue";
 
 const props = defineProps({
   answer: { type: String, default: "" },
@@ -90,10 +95,10 @@ onMounted(async () => {
 </script>
 
 <template>
-  <div class="w-full rounded-lg bg-black-3/15 px-4 mb-4 py-6">
+  <div class="w-full px-4 py-6 mb-4 rounded-lg bg-black-3/15">
     <div
       @click="toggleAccordion"
-      class="cursor-pointer flex justify-between items-center"
+      class="flex items-center justify-between cursor-pointer"
     >
       <span class="text-lg font-semibold text-black-2">풀이와 답 수정</span>
       <svg
@@ -116,22 +121,22 @@ onMounted(async () => {
       </svg>
     </div>
 
-    <div v-if="isOpen" class="p-4 border-t border-b border-gray-300 mt-4">
-      <h4 class="text-lg font-semibold text-black-2 mb-4">정답</h4>
+    <div v-if="isOpen" class="p-4 mt-4 border-t border-b border-gray-300">
+      <h4 class="mb-4 text-lg font-semibold text-black-2">정답</h4>
       <p class="text-gray-700">{{ answer || "답이 없습니다." }}</p>
     </div>
     <div v-if="isOpen" class="p-4">
-      <h4 class="text-lg font-semibold text-black-2 mb-4">문제 해설</h4>
+      <h4 class="mb-4 text-lg font-semibold text-black-2">문제 해설</h4>
       <div
         ref="explanationEditor"
-        class="text-gray-700 min-h-4 mb-10 w-full"
+        class="w-full mb-10 text-gray-700 min-h-4"
       ></div>
     </div>
   </div>
 
   <div
     v-if="source"
-    class="text-gray-500 mt-4 p-4 border-b border-gray-300 mb-10 flex items-start gap-2"
+    class="flex items-start gap-2 p-4 mt-4 mb-10 text-gray-500 border-b border-gray-300"
   >
     <span class="flex-shrink-0 mt-1">출처 |</span>
     <textarea
@@ -139,7 +144,7 @@ onMounted(async () => {
       :value="source"
       @input="handleSourceChange"
       rows="1"
-      class="border border-gray-300 rounded p-1 flex-1 overflow-hidden"
+      class="flex-1 p-1 overflow-hidden border border-gray-300 rounded"
       style="resize: none; min-height: 24px"
     ></textarea>
   </div>

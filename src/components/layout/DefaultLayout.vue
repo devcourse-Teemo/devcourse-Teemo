@@ -1,9 +1,12 @@
 <script setup>
+// Components
+import Header from "./Header.vue";
+
 import Sidebar from "@/components/layout/Sidebar.vue";
 
-import { RouterView } from "vue-router";
+// Vue Core
 import { useRoute } from "vue-router";
-import Header from "./Header.vue";
+import { RouterView } from "vue-router";
 
 const route = useRoute();
 </script>

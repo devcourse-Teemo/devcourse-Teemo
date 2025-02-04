@@ -1,7 +1,8 @@
 import { defineStore } from "pinia";
 import { ref, computed } from "vue";
-import { problemAPI } from "@/api/problem";
 import { useToast } from "primevue/usetoast";
+
+import { problemAPI } from "@/api/problem";
 
 const emptyProblem = {
   title: "",

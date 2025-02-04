@@ -1,10 +1,18 @@
 <script setup>
+// APIs
 import { followAPI } from "@/api/follow";
+
+// PrimeVue
+import { Button, useToast } from "primevue";
+
+// Store
+import { storeToRefs } from "pinia";
+
+import { useAuthStore } from "@/store/authStore";
+
+// Vue Core
 import { useRoute } from "vue-router";
 import { ref, watchEffect } from "vue";
-import { Button, useToast } from "primevue";
-import { useAuthStore } from "@/store/authStore";
-import { storeToRefs } from "pinia";
 
 const { imgSrc, name, email } = defineProps({
   imgSrc: String,
@@ -72,7 +80,7 @@ watchEffect(async () => {
 </script>
 <template>
   <article
-    class="flex flex-col justify-center items-center w-52 h-56 bg-beige-2 px-11 rounded-2xl gap-4"
+    class="flex flex-col items-center justify-center h-56 gap-4 w-52 bg-beige-2 px-11 rounded-2xl"
   >
     <img
       :class="[
@@ -83,10 +91,10 @@ watchEffect(async () => {
       alt="내 프로필 이미지"
     />
     <div class="flex flex-col items-center">
-      <p class="font-semibold text-xl">
+      <p class="text-xl font-semibold">
         {{ name }}
       </p>
-      <p class="font-medium text-gray-3 text-sm">
+      <p class="text-sm font-medium text-gray-3">
         {{ email }}
       </p>
     </div>
@@ -95,7 +103,7 @@ watchEffect(async () => {
         v-if="!isFollowing"
         @click="followUser"
         severity="primary"
-        class="flex justify-center items-center w-full h-3 border border-black-3"
+        class="flex items-center justify-center w-full h-3 border border-black-3"
         label="팔로우"
       />
       <Button
@@ -103,7 +111,7 @@ watchEffect(async () => {
         @click="unfollowUser"
         severity="primary"
         variant="outlined"
-        class="flex justify-center items-center w-full h-3 border border-black-3"
+        class="flex items-center justify-center w-full h-3 border border-black-3"
         label="팔로우 취소"
       />
     </template>

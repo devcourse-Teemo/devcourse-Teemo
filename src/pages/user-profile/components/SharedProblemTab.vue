@@ -1,6 +1,11 @@
 <script setup>
+// APIs
 import { problemAPI } from "@/api/problem";
+
+// Components
 import ProblemTable from "@/components/layout/ProblemTable.vue";
+
+// Vue Core
 import { ref, watch } from "vue";
 import { useRoute } from "vue-router";
 

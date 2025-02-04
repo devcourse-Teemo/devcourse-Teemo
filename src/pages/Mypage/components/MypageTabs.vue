@@ -1,16 +1,28 @@
 <script setup>
-import { RouterLink } from "vue-router";
-import { Column, DataTable } from "primevue";
-import { GRADES } from "@/const/grades";
-import { ref, watch } from "vue";
-import { formatDate } from "@/utils/formatDate";
-import { PointType } from "@/const/PointType";
-import { useRoute } from "vue-router";
+// APIs
 import { pointAPI } from "@/api/point";
-import { useAuthStore } from "@/store/authStore";
-import { storeToRefs } from "pinia";
 import { followAPI } from "@/api/follow";
+
+// Const
+import { GRADES } from "@/const/grades";
+import { PointType } from "@/const/PointType";
+
+// Components
 import EmptyText from "@/components/layout/EmptyText.vue";
+
+// Prime Vue
+import { Column, DataTable } from "primevue";
+
+// Store
+import { storeToRefs } from "pinia";
+import { useAuthStore } from "@/store/authStore";
+
+// Utils
+import { formatDate } from "@/utils/formatDate";
+
+// Vue Core
+import { ref, watch } from "vue";
+import { RouterLink, useRoute } from "vue-router";
 
 const route = useRoute();
 const authStore = useAuthStore();
@@ -64,7 +76,7 @@ watch(
 </script>
 <template>
   <section class="flex flex-col gap-6">
-    <div class="flex gap-8 text-black-2 font-semibold text-xl">
+    <div class="flex gap-8 text-xl font-semibold text-black-2">
       <RouterLink
         v-for="tab in TABS"
         :to="`${route.path}?tab=${tab}`"
@@ -92,11 +104,11 @@ watch(
         <RouterLink
           v-for="{ following } in followings"
           :to="`/users/${following.id}`"
-          class="flex flex-col justify-center items-center gap-4 w-36 h-40 px-2 py-5 bg-black-6/20 rounded-lg"
+          class="flex flex-col items-center justify-center h-40 gap-4 px-2 py-5 rounded-lg w-36 bg-black-6/20"
         >
           <p v-if="!following" class="">아직 팔로잉한 사람이 없어요...</p>
           <img
-            class="w-16 h-16 rounded-full border border-black-4"
+            class="w-16 h-16 border rounded-full border-black-4"
             :src="following.avatar_url"
             alt="프로필 이미지"
           />
@@ -122,10 +134,10 @@ watch(
         <RouterLink
           v-for="{ follower } in followers"
           :to="`/users/${follower.id}`"
-          class="flex flex-col justify-center items-center gap-4 w-36 h-40 px-2 py-5 bg-black-6/20 rounded-lg"
+          class="flex flex-col items-center justify-center h-40 gap-4 px-2 py-5 rounded-lg w-36 bg-black-6/20"
         >
           <img
-            class="w-16 h-16 rounded-full border border-black-4"
+            class="w-16 h-16 border rounded-full border-black-4"
             :src="follower.avatar_url"
             alt="프로필 이미지"
           />
@@ -144,29 +156,29 @@ watch(
           v-for="grade in [GRADES.one, GRADES.two, GRADES.three]"
           class="flex gap-4 w-[50rem] bg-black-6 p-4 rounded-lg"
         >
-          <div class="flex justify-center items-center">
+          <div class="flex items-center justify-center">
             <img
               :src="grade.imgSrc"
-              class="w-16 h-20 object-cover"
+              class="object-cover w-16 h-20"
               alt="등급 이미지"
             />
           </div>
           <div class="flex flex-col justify-center gap-4">
             <div class="flex flex-col">
-              <p class="font-semibold mr-2">{{ grade.name }}</p>
+              <p class="mr-2 font-semibold">{{ grade.name }}</p>
               <p class="text-sm text-[10px]">{{ grade.point }}포인트</p>
             </div>
             <div>
               <p class="text-sm">
                 <span
-                  class="pi pi-circle-fill mr-2"
+                  class="mr-2 pi pi-circle-fill"
                   style="font-size: 6px"
                 ></span>
                 <span>시험장 {{ grade.examLimit }}개</span>
               </p>
               <p class="text-sm">
                 <span
-                  class="pi pi-circle-fill mr-2"
+                  class="mr-2 pi pi-circle-fill"
                   style="font-size: 6px"
                 ></span>
                 <span>문제집 {{ grade.problemSetLimit }}개</span>
@@ -175,30 +187,30 @@ watch(
           </div>
         </div>
         <div
-          class="flex flex-col justify-between gap-2 w-full bg-black-6 px-6 py-4 rounded-lg"
+          class="flex flex-col justify-between w-full gap-2 px-6 py-4 rounded-lg bg-black-6"
         >
           <p>포인트 획득</p>
           <div class="flex flex-col gap-1 text-sm">
             <p>
               <span>문제 생성 : </span>
-              <span class="font-semibold ml-1">5 포인트</span>
+              <span class="ml-1 font-semibold">5 포인트</span>
             </p>
             <p>
               <span>댓글 작성 : </span>
-              <span class="font-semibold ml-1">2 포인트</span>
+              <span class="ml-1 font-semibold">2 포인트</span>
             </p>
             <div>
               <p>
                 <span>시험 완료 (10문제 이상) :</span>
-                <span class="font-semibold ml-1">9 포인트</span>
+                <span class="ml-1 font-semibold">9 포인트</span>
               </p>
               <p class="flex items-center">
                 <span
-                  class="pi pi-circle-fill mr-2"
+                  class="mr-2 pi pi-circle-fill"
                   style="font-size: 6px"
                 ></span>
                 <span>모두 정답 :</span>
-                <span class="font-semibold mx-1">1 포인트</span> 추가 획득
+                <span class="mx-1 font-semibold">1 포인트</span> 추가 획득
               </p>
             </div>
           </div>

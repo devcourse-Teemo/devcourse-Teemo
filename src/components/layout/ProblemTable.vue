@@ -1,5 +1,22 @@
 <script setup>
-import { ref, defineProps, computed, inject } from "vue";
+// APIs
+import { problemAPI } from "@/api/problem";
+import { SORT, SORTS } from "@/const/sorts";
+import { workbookAPI } from "@/api/workbook";
+
+// Components
+import EmptyText from "./EmptyText.vue";
+import ConfirmModal from "./ConfirmModal.vue";
+import ProblemSetPopUp from "./ProblemSetPopUp.vue";
+
+// Icons
+import plus from "@/assets/icons/problem-board/plus.svg";
+import minus from "@/assets/icons/problem-board/minus.svg";
+import statusWrong from "@/assets/icons/problem-board/status-wrong.svg";
+import statusSolved from "@/assets/icons/problem-board/status-solved.svg";
+import checkedMyProblem from "@/assets/icons/my-problems/color-my-problems.svg";
+
+// PrimeVue
 import {
   Button,
   Column,
@@ -9,23 +26,15 @@ import {
   useToast,
   useConfirm,
 } from "primevue";
+
+// Store
 import { storeToRefs } from "pinia";
-import { RouterLink } from "vue-router";
-import { problemAPI } from "@/api/problem";
-import { SORT, SORTS } from "@/const/sorts";
-import EmptyText from "./EmptyText.vue";
-import { workbookAPI } from "@/api/workbook";
+
 import { useAuthStore } from "@/store/authStore";
-import plus from "@/assets/icons/problem-board/plus.svg";
-import minus from "@/assets/icons/problem-board/minus.svg";
-import statusWrong from "@/assets/icons/problem-board/status-wrong.svg";
-import statusSolved from "@/assets/icons/problem-board/status-solved.svg";
-import checkedMyProblem from "@/assets/icons/my-problems/color-my-problems.svg";
-import { useRoute } from "vue-router";
-import { useRouter } from "vue-router";
-import { watch, onBeforeMount } from "vue";
-import ConfirmModal from "./ConfirmModal.vue";
-import ProblemSetPopUp from "./ProblemSetPopUp.vue";
+
+// Vue Core
+import { RouterLink, useRoute, useRouter } from "vue-router";
+import { ref, defineProps, computed, inject, watch, onBeforeMount } from "vue";
 
 const props = defineProps({
   problems: {
@@ -265,9 +274,7 @@ watch(
 
 watch(
   () => route.query,
-  () => {
-    console.log(route.query);
-  },
+  () => {},
 );
 
 watch(sort, (newSort) => {

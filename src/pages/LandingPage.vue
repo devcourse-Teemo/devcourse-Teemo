@@ -1,8 +1,11 @@
 <script setup>
+// Icons
 import { ref } from "vue";
-import LoginModal from "@/components/layout/LoginModal.vue";
-import previewIMG from "@/assets/icons/preview.png";
+
+// Vue Core
 import logoPath from "@/assets/logos/logo.svg";
+import previewIMG from "@/assets/icons/preview.png";
+import LoginModal from "@/components/layout/LoginModal.vue";
 
 const showLoginModal = ref(false);
 

@@ -1,6 +1,10 @@
 <script setup>
+// Icons
 import plusPath from "@/assets/icons/problem-editor/plus.svg";
+
+// Store
 import { storeToRefs } from "pinia";
+
 import { useCreateProblemStore } from "@/store/createProblemStore";
 
 const createProblemStore = useCreateProblemStore();
@@ -12,9 +16,9 @@ const onClickProblem = (idx) => {
 </script>
 
 <template>
-  <aside class="border-black-5 border bg-beige-2 flex flex-col p-4 gap-2">
+  <aside class="flex flex-col gap-2 p-4 border border-black-5 bg-beige-2">
     <p
-      class="header font-semibold text-md text-black-2 flex justify-between items-center mb-2"
+      class="flex items-center justify-between mb-2 font-semibold header text-md text-black-2"
     >
       <!-- 문제 (props.problemLists.length) -->
       <!-- <span>문제 ({{ props.problemList.length }})</span> -->
@@ -22,12 +26,12 @@ const onClickProblem = (idx) => {
       <span>문제 ({{ createdProblems.problemLists.length }})</span>
       <!-- <span
         role="button"
-        class="bg-white border border-black-3 p-1 rounded-full w-8 h-8 grid place-items-center cursor-pointer hover:scale-110"
+        class="grid w-8 h-8 p-1 bg-white border rounded-full cursor-pointer border-black-3 place-items-center hover:scale-110"
         @click="emits('addProblem')"
       > -->
       <span
         role="button"
-        class="bg-white border border-black-3 p-1 rounded-full w-8 h-8 grid place-items-center cursor-pointer hover:scale-110"
+        class="grid w-8 h-8 p-1 bg-white border rounded-full cursor-pointer border-black-3 place-items-center hover:scale-110"
         @click="createProblemStore.addProblem()"
       >
         <img :src="plusPath" alt="아이템 추가하기" class="h-4 align-center" />
@@ -58,7 +62,7 @@ const onClickProblem = (idx) => {
           : 'border border-black-5',
       ]"
     >
-      <p class="text-sm text-black-1 truncate">
+      <p class="text-sm truncate text-black-1">
         <span class="mr-1">{{ idx + 1 }}.</span>
         <span>{{ problem.title }}</span>
       </p>

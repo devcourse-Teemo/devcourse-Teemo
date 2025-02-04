@@ -1,12 +1,20 @@
 <script setup>
+// APIs
 import { workbookAPI } from "@/api/workbook";
+
+// Const
+import { SORT, SORTS } from "@/const/sorts";
+
+// Components
 import EmptyText from "@/components/layout/EmptyText.vue";
 import ProblemSet from "@/components/layout/ProblemSet.vue";
-import { SORT, SORTS } from "@/const/sorts";
+
+// Prime Vue
 import { Paginator, Select } from "primevue";
+
+// Vue Core
 import { watch, ref, computed } from "vue";
-import { useRouter } from "vue-router";
-import { useRoute } from "vue-router";
+import { useRouter, useRoute } from "vue-router";
 
 const route = useRoute();
 const router = useRouter();
@@ -58,8 +66,8 @@ watch(
 );
 </script>
 <template>
-  <div class="flex justify-between items-center">
-    <p class="font-semibold text-xl">{{ problemSets.length }} 문제집</p>
+  <div class="flex items-center justify-between">
+    <p class="text-xl font-semibold">{{ problemSets.length }} 문제집</p>
     <Select v-model="sort" :options="sorts" optionLabel="name" class="w-40" />
   </div>
 

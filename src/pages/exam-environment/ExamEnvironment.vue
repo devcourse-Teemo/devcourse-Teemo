@@ -1,16 +1,25 @@
 <script setup>
-import { ref, computed, onMounted, onBeforeUnmount, onBeforeMount } from "vue";
-import { useRouter } from "vue-router";
-import TestProblem from "./components/TestProblem.vue";
-import TestSidebar from "./components/TestSidebar.vue";
-import { useRoute } from "vue-router";
+// APIs
 import { testCenterAPI } from "@/api/testCenter";
 import { testResultAPI } from "@/api/testResult";
-import { useToast } from "primevue";
 import { problemHistoryAPI } from "@/api/problemHistory";
+
+// Components
+import TestProblem from "./components/TestProblem.vue";
+import TestSidebar from "./components/TestSidebar.vue";
+
+// PrimeVue
+import { useToast } from "primevue";
+
+// Stores
+import { storeToRefs } from "pinia/dist/pinia";
+
 import { useExamStore } from "@/store/examStore";
 import { useAuthStore } from "@/store/authStore";
-import { storeToRefs } from "pinia/dist/pinia";
+
+// Vue Core
+import { useRouter, useRoute } from "vue-router";
+import { ref, computed, onMounted, onBeforeUnmount, onBeforeMount } from "vue";
 
 let intervalId;
 const toast = useToast();
@@ -200,13 +209,13 @@ onBeforeUnmount(() => {
 });
 </script>
 <template>
-  <main class="flex h-auto relative">
+  <main class="relative flex h-auto">
     <section class="flex flex-col justify-between w-full">
       <div class="flex flex-col">
         <div
-          class="flex justify-center items-center w-full h-16 bg-black-6 mb-14"
+          class="flex items-center justify-center w-full h-16 bg-black-6 mb-14"
         >
-          <h1 class="font-semibold text-xl">
+          <h1 class="text-xl font-semibold">
             {{ testCenter?.workbook?.title }} 시험장
           </h1>
         </div>
@@ -223,14 +232,14 @@ onBeforeUnmount(() => {
           <button
             @click="setPrevProblemIndex"
             type="button"
-            class="w-20 h-8 bg-navy-3 text-center rounded-l-2xl rounded-r-sm text-white"
+            class="w-20 h-8 text-center text-white rounded-r-sm bg-navy-3 rounded-l-2xl"
           >
             이전
           </button>
           <button
             @click="setNextProblemIndex"
             type="button"
-            class="w-20 h-8 bg-navy-3 text-center rounded-r-2xl rounded-l-sm text-white"
+            class="w-20 h-8 text-center text-white rounded-l-sm bg-navy-3 rounded-r-2xl"
           >
             다음
           </button>

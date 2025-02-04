@@ -1,9 +1,13 @@
 <script setup>
-import { ref, watch } from "vue";
+// APIs
 import { followAPI } from "@/api/follow";
-import { useRoute } from "vue-router";
-import { RouterLink } from "vue-router";
+
+// Components
 import EmptyText from "@/components/layout/EmptyText.vue";
+
+// Vue Core
+import { ref, watch } from "vue";
+import { useRoute, RouterLink } from "vue-router";
 
 const route = useRoute();
 const followings = ref([]);
@@ -25,10 +29,10 @@ watch(
       <RouterLink
         v-for="{ following } in followings"
         :to="`/users/${following.id}`"
-        class="flex flex-col justify-center items-center gap-4 w-36 h-40 px-2 py-5 bg-black-6/20 rounded-lg"
+        class="flex flex-col items-center justify-center h-40 gap-4 px-2 py-5 rounded-lg w-36 bg-black-6/20"
       >
         <img
-          class="w-16 h-16 rounded-full border border-black-4"
+          class="w-16 h-16 border rounded-full border-black-4"
           :src="following.avatar_url"
           alt="프로필 이미지"
         />

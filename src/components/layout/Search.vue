@@ -1,10 +1,17 @@
 <script setup>
-import { ref, onMounted, onBeforeUnmount, watch } from "vue";
-import dropdownDown from "@/assets/icons/problem-set-board/dropdown-down.svg";
+// Icons
 import search from "@/assets/icons/problem-set-board/search.svg";
+import dropdownDown from "@/assets/icons/problem-set-board/dropdown-down.svg";
+
+// PrimeVue
 import { Chip, DatePicker, RadioButton } from "primevue";
+
+// Utils
 import { formatDate } from "@/utils/formatDate";
+
+// Vue Core
 import { useRoute } from "vue-router";
+import { ref, onMounted, onBeforeUnmount, watch } from "vue";
 
 const STATUSES = ["안 푼 문제", "푼 문제", "틀린 문제"];
 const route = useRoute();
@@ -114,13 +121,13 @@ onBeforeUnmount(() => {
 
         <div
           v-if="isOpen"
-          class="absolute left-0 w-full mt-2 bg-beige-2 border rounded-md shadow-lg"
+          class="absolute left-0 w-full mt-2 border rounded-md shadow-lg bg-beige-2"
         >
           <ul>
             <li
               v-for="STATUS in STATUSES"
               :key="STATUS"
-              class="flex items-center px-4 py-2 hover:bg-beige-1 cursor-pointer transition-colors"
+              class="flex items-center px-4 py-2 transition-colors cursor-pointer hover:bg-beige-1"
             >
               <RadioButton
                 v-model="status"
@@ -135,8 +142,8 @@ onBeforeUnmount(() => {
           </ul>
         </div>
       </div>
-      <div class="w-full h-10 px-4 bg-beige-2 border border-black-4 rounded-lg">
-        <div class="flex card items-center h-10 gap-4">
+      <div class="w-full h-10 px-4 border rounded-lg bg-beige-2 border-black-4">
+        <div class="flex items-center h-10 gap-4 card">
           <span>검색 기간</span>
           <span>|</span>
           <span>시작일</span>
