@@ -3,6 +3,7 @@ import { ref, onMounted, watch, nextTick, watchEffect } from "vue";
 import Viewer from "@toast-ui/editor/dist/toastui-editor-viewer";
 import "@toast-ui/editor/dist/toastui-editor-viewer.css";
 import { chatCompletion } from "@/api/openai";
+import { useToast } from "primevue/usetoast"; 
 
 const props = defineProps({
   title: String,
@@ -18,6 +19,8 @@ const viewerRef = ref(null);
 const gptExplanation = ref("");
 const isGptLoading = ref(false);
 let viewer = null;
+const toast = useToast();
+const isRateLimited = ref(false);
 
 const initViewer = () => {
   try {
@@ -38,24 +41,42 @@ const initViewer = () => {
 const getGptExplanation = async () => {
   try {
     isGptLoading.value = true;
+    isRateLimited.value = false;
+
     const prompt = `다음 문제를 풀이해주세요:
     제목: ${props.title}
     문제: ${props.question}
     보기:
-    1번: ${props.options?.option_one || ''}
-    2번: ${props.options?.option_two || ''}
-    3번: ${props.options?.option_three || ''}
-    4번: ${props.options?.option_four || ''}
+    1번: ${props.options?.option_one || ""}
+    2번: ${props.options?.option_two || ""}
+    3번: ${props.options?.option_three || ""}
+    4번: ${props.options?.option_four || ""}
     정답: ${props.answer}
     
-    풀이 방법과 해설을 자세히 제공해주세요.`;
+    풀이 방법과 해설을 자세히 제공해주세요.
+    같은 문제에 대해서는 항상 같은 풀이를 제공해야 합니다.`;
 
-    const response = await chatCompletion([
-      { role: "user", content: prompt }
-    ]);
+    const response = await chatCompletion([{ role: "user", content: prompt }]);
     gptExplanation.value = response.content;
   } catch (error) {
     console.error("GPT 설명 로드 실패:", error);
+
+    if (error.status === 429) {
+      isRateLimited.value = true;
+      toast.add({
+        severity: "warn",
+        summary: "API 사용량 초과",
+        detail: "현재 많은 사용자가 이용 중입니다. 잠시 후 다시 시도해주세요.",
+        life: 5000,
+      });
+    } else {
+      toast.add({
+        severity: "error",
+        summary: "오류 발생",
+        detail: "설명을 불러오는 중 문제가 발생했습니다.",
+        life: 3000,
+      });
+    }
   } finally {
     isGptLoading.value = false;
   }
@@ -79,11 +100,11 @@ onMounted(() => {
 watch(() => props.explanation, initViewer);
 
 watchEffect(() => {
-  console.log('Props 데이터:', {
+  console.log("Props 데이터:", {
     title: props.title,
     question: props.question,
     options: props.options,
-    answer: props.answer
+    answer: props.answer,
   });
 });
 </script>
@@ -121,7 +142,11 @@ watchEffect(() => {
     </div>
     <div v-if="isOpen" class="p-4">
       <h4 class="text-lg font-semibold text-black-2 mb-4">문제 해설</h4>
-      <div v-if="explanation" ref="viewerRef" class="text-gray-700 min-h-4 mb-10"></div>
+      <div
+        v-if="explanation"
+        ref="viewerRef"
+        class="text-gray-700 min-h-4 mb-10"
+      ></div>
       <p v-else class="text-gray-700">해설이 없습니다.</p>
 
       <!-- GPT 풀이 섹션 -->
@@ -130,14 +155,22 @@ watchEffect(() => {
           <h4 class="text-lg font-semibold text-black-2">AI 해설</h4>
           <button
             @click="getGptExplanation"
-            class="px-4 py-2 bg-orange-1 text-white rounded-lg hover:bg-orange-2 disabled:opacity-50"
-            :disabled="isGptLoading"
+            class="px-4 py-2 bg-orange-1 text-white rounded-lg hover:bg-orange-2 disabled:opacity-50 disabled:cursor-not-allowed"
+            :disabled="isGptLoading || isRateLimited"
           >
-            {{ isGptLoading ? "로딩 중..." : "GPT 풀이 보기" }}
+            {{
+              isGptLoading
+                ? "로딩 중..."
+                : isRateLimited
+                ? "사용량 초과"
+                : "GPT 풀이 보기"
+            }}
           </button>
         </div>
         <div v-if="gptExplanation" class="prose max-w-none">
-          <div class="whitespace-pre-wrap text-gray-700">{{ gptExplanation }}</div>
+          <div class="whitespace-pre-wrap text-gray-700">
+            {{ gptExplanation }}
+          </div>
         </div>
       </div>
     </div>
