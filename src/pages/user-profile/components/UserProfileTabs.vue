@@ -1,11 +1,15 @@
 <script setup>
-import { ref, watch } from "vue";
-import { useRoute } from "vue-router";
-import FollowingTab from "./FollowingTab.vue";
-import SharedProblemSetsTab from "./SharedProblemSetsTab.vue";
-import { useRouter } from "vue-router";
+// Const
 import { SORT } from "@/const/sorts";
+
+// Components
+import FollowingTab from "./FollowingTab.vue";
 import SharedProblemTab from "./SharedProblemTab.vue";
+import SharedProblemSetsTab from "./SharedProblemSetsTab.vue";
+
+// Vue Core
+import { ref, watch } from "vue";
+import { useRoute, useRouter } from "vue-router";
 
 const route = useRoute();
 const router = useRouter();
@@ -53,7 +57,7 @@ watch(
 </script>
 <template>
   <section class="flex flex-col gap-6">
-    <div class="flex gap-8 text-black-2 font-semibold text-xl">
+    <div class="flex gap-8 text-xl font-semibold text-black-2">
       <button
         v-for="tab in TABS"
         @click="changeTab(tab)"

@@ -1,22 +1,34 @@
 <script setup>
-import { ref, computed } from "vue";
-import { Swiper, SwiperSlide } from "swiper/vue";
-import { EffectCards } from "swiper/modules";
+// APIs
+import { inviteAPI } from "@/api/invite";
+import { testCenterAPI } from "@/api/testCenter";
+
+// Components
+import SelectionChip from "./components/SelectionChip.vue";
 import SelectWorkbook from "./components/SelectWorkbook.vue";
 import SelectDateTime from "./components/SelectDateTime.vue";
 import SelectParticipants from "./components/SelectParticipants.vue";
-import SelectionChip from "./components/SelectionChip.vue";
+
+// Icons
 import leftArrow from "@/assets/icons/create-exam-room/left-arrow.svg";
 import rightArrow from "@/assets/icons/create-exam-room/right-arrow.svg";
-import { useRouter } from "vue-router";
-import { useToast } from "primevue/usetoast";
-import { Dialog, Button } from "primevue";
 
+// PrimeVue
+import { Dialog, Button } from "primevue";
+import { useToast } from "primevue/usetoast";
+
+// Store
+import { useAuthStore } from "@/store/authStore";
+
+// Swiper
 import "swiper/css";
 import "swiper/css/effect-cards";
-import { useAuthStore } from "@/store/authStore";
-import { testCenterAPI } from "@/api/testCenter";
-import { inviteAPI } from "@/api/invite";
+import { EffectCards } from "swiper/modules";
+import { Swiper, SwiperSlide } from "swiper/vue";
+
+// Vue Core
+import { ref, computed } from "vue";
+import { useRouter } from "vue-router";
 
 const swiperInstance = ref(null);
 const currentTab = ref(0);
@@ -152,7 +164,7 @@ const submitExam = async () => {
 </script>
 
 <template>
-  <h1 class="font-laundry mb-8 text-5xl font-medium">시험장 만들기</h1>
+  <h1 class="mb-8 text-5xl font-medium font-laundry">시험장 만들기</h1>
 
   <!-- Swiper -->
   <div class="relative h-[700px] overflow-visible pr-12">
@@ -162,16 +174,16 @@ const submitExam = async () => {
       :grabCursor="true"
       @swiper="onSwiper"
       @slideChange="onSlideChange"
-      class="mySwiper overflow-visible"
+      class="overflow-visible mySwiper"
     >
       <!-- 문제집 슬라이드 -->
       <SwiperSlide
         :class="{ 'active-slide': currentTab === 0 }"
-        class="border-beige-2 border"
+        class="border border-beige-2"
       >
-        <div class="px-16 py-6 relative">
+        <div class="relative px-16 py-6">
           <!-- Chips Container -->
-          <div class="flex gap-2 flex-wrap mb-4">
+          <div class="flex flex-wrap gap-2 mb-4">
             <SelectionChip
               v-if="examData.selectedWorkbook"
               :label="`${examData.selectedWorkbook.title}`"
@@ -199,22 +211,22 @@ const submitExam = async () => {
             v-model:selectedWorkbook="examData.selectedWorkbook"
           />
           <div
-            class="absolute top-8 transition-all duration-300 z-20"
+            class="absolute z-20 transition-all duration-300 top-8"
             :style="{ right: '-3rem' }"
             @click="setTab(0)"
           >
             <div
-              class="bg-orange-2 rounded-r-lg p-4 flex items-center gap-2 cursor-pointer"
+              class="flex items-center gap-2 p-4 rounded-r-lg cursor-pointer bg-orange-2"
               :class="{ 'bg-orange-500': currentTab === 0 }"
             >
-              <i class="pi pi-book text-white"></i>
+              <i class="text-white pi pi-book"></i>
             </div>
           </div>
         </div>
-        <div class="absolute bottom-6 right-6 flex gap-4">
+        <div class="absolute flex gap-4 bottom-6 right-6">
           <button
             @click="nextSlide"
-            class="px-6 py-2 text-gray-3 rounded flex items-center gap-2 hover:text-gray-2 transition"
+            class="flex items-center gap-2 px-6 py-2 transition rounded text-gray-3 hover:text-gray-2"
           >
             다음으로
             <img :src="rightArrow" alt="다음으로 가기" />
@@ -225,11 +237,11 @@ const submitExam = async () => {
       <!-- 시간 선택 슬라이드 -->
       <SwiperSlide
         :class="{ 'active-slide': currentTab === 1 }"
-        class="border-beige-2 border"
+        class="border border-beige-2"
       >
-        <div class="px-16 py-6 relative">
+        <div class="relative px-16 py-6">
           <!-- Chips Container -->
-          <div class="flex gap-2 flex-wrap mb-4">
+          <div class="flex flex-wrap gap-2 mb-4">
             <SelectionChip
               v-if="examData.selectedWorkbook"
               :label="`${examData.selectedWorkbook.title}`"
@@ -258,29 +270,29 @@ const submitExam = async () => {
             v-model:duration="examData.duration"
           />
           <div
-            class="absolute top-16 transition-all duration-300 z-20"
+            class="absolute z-20 transition-all duration-300 top-16"
             :style="{ right: '-3rem' }"
             @click="setTab(1)"
           >
             <div
-              class="bg-orange-2 rounded-r-lg p-4 flex items-center gap-2 cursor-pointer"
+              class="flex items-center gap-2 p-4 rounded-r-lg cursor-pointer bg-orange-2"
               :class="{ 'bg-orange-500': currentTab === 1 }"
             >
-              <i class="pi pi-clock text-white"></i>
+              <i class="text-white pi pi-clock"></i>
             </div>
           </div>
         </div>
-        <div class="absolute bottom-6 right-6 flex gap-4">
+        <div class="absolute flex gap-4 bottom-6 right-6">
           <button
             @click="prevSlide"
-            class="px-6 py-2 text-gray-3 rounded flex items-center gap-2 hover:text-gray-2 transition"
+            class="flex items-center gap-2 px-6 py-2 transition rounded text-gray-3 hover:text-gray-2"
           >
             <img :src="leftArrow" alt="이전으로 가기" />
             이전으로
           </button>
           <button
             @click="nextSlide"
-            class="px-6 py-2 text-gray-3 rounded flex items-center gap-2 hover:text-gray-2 transition"
+            class="flex items-center gap-2 px-6 py-2 transition rounded text-gray-3 hover:text-gray-2"
           >
             다음으로
             <img :src="rightArrow" alt="다음으로 가기" />
@@ -291,11 +303,11 @@ const submitExam = async () => {
       <!-- 참가자 선택 슬라이드 -->
       <SwiperSlide
         :class="{ 'active-slide': currentTab === 2 }"
-        class="border-beige-2 border"
+        class="border border-beige-2"
       >
-        <div class="px-16 py-6 relative">
+        <div class="relative px-16 py-6">
           <!-- Chips Container -->
-          <div class="flex gap-2 flex-wrap mb-4">
+          <div class="flex flex-wrap gap-2 mb-4">
             <SelectionChip
               v-if="examData.selectedWorkbook"
               :label="`${examData.selectedWorkbook.title}`"
@@ -321,22 +333,22 @@ const submitExam = async () => {
 
           <SelectParticipants v-model:participants="examData.participants" />
           <div
-            class="absolute top-32 transition-all duration-300 z-20"
+            class="absolute z-20 transition-all duration-300 top-32"
             :style="{ right: '-3rem' }"
             @click="setTab(2)"
           >
             <div
-              class="bg-orange-2 rounded-r-lg p-4 flex items-center gap-2 cursor-pointer"
+              class="flex items-center gap-2 p-4 rounded-r-lg cursor-pointer bg-orange-2"
               :class="{ 'bg-orange-500': currentTab === 2 }"
             >
-              <i class="pi pi-user-plus text-white"></i>
+              <i class="text-white pi pi-user-plus"></i>
             </div>
           </div>
         </div>
-        <div class="absolute bottom-6 right-6 flex gap-4">
+        <div class="absolute flex gap-4 bottom-6 right-6">
           <button
             @click="prevSlide"
-            class="px-6 py-2 text-gray-3 rounded flex items-center gap-2 hover:text-gray-2 transition"
+            class="flex items-center gap-2 px-6 py-2 transition rounded text-gray-3 hover:text-gray-2"
           >
             <img :src="leftArrow" alt="이전으로 가기" />
             이전으로
@@ -344,7 +356,7 @@ const submitExam = async () => {
           <button
             @click="handleSubmit"
             :disabled="!isCompleteEnabled"
-            class="px-10 py-2 bg-orange-500 text-white rounded-full hover:bg-orange-600 disabled:bg-gray-300 disabled:cursor-not-allowed"
+            class="px-10 py-2 text-white bg-orange-500 rounded-full hover:bg-orange-600 disabled:bg-gray-300 disabled:cursor-not-allowed"
           >
             완료하기
           </button>

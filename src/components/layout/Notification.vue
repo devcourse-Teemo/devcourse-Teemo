@@ -1,19 +1,30 @@
 <script setup>
+// APIs
 import { supabase } from "@/api";
 import { notificationAPI } from "@/api/notification";
-import { Button, Menu } from "primevue";
-import { ref, onBeforeMount, nextTick } from "vue";
-import { RouterLink } from "vue-router";
+
+// Components
 import EmptyText from "@/components/layout/EmptyText.vue";
+
+// Prime Vue
 import Badge from "primevue/badge";
+import { Button, Menu } from "primevue";
+
+// Store
 import { storeToRefs } from "pinia";
+
 import { useAuthStore } from "@/store/authStore";
+
+// Vue Core
+import { RouterLink } from "vue-router";
+import { ref, onBeforeMount, nextTick } from "vue";
 
 const authStore = useAuthStore();
 const { user } = storeToRefs(authStore);
-const newNotificationCount = ref(0);
-const notifications = ref([]);
+
 const menu = ref(null);
+const notifications = ref([]);
+const newNotificationCount = ref(0);
 
 supabase
   .channel("notification-channel")
@@ -173,7 +184,7 @@ onBeforeMount(() => {
     ref="menu"
     id="notification_menu"
     :model="notifications"
-    class="w-80 max-h-80 overflow-y-auto"
+    class="overflow-y-auto w-80 max-h-80"
     popup
   >
     <template #start>

@@ -1,7 +1,8 @@
-import { defineStore } from "pinia";
 import { ref } from "vue";
-import { problemAPI } from "@/api/problem";
+import { defineStore } from "pinia";
+
 import { userAPI } from "@/api/user";
+import { problemAPI } from "@/api/problem";
 
 export const useProblemStore = defineStore("problem", () => {
   const problem = ref({});

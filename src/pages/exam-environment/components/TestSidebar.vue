@@ -1,4 +1,5 @@
 <script setup>
+// PrimeVue
 import { Button, ConfirmDialog, useConfirm } from "primevue";
 
 const { userAnswers, remainedTime } = defineProps({
@@ -23,12 +24,12 @@ const requireConfirmation = () => {
 </script>
 <template>
   <aside
-    class="sticky top-0 flex flex-col min-w-72 w-72 h-screen border-l border-black-4 bg-white"
+    class="sticky top-0 flex flex-col h-screen bg-white border-l min-w-72 w-72 border-black-4"
   >
-    <div class="flex flex-col justify-center items-center h-16 bg-black-5">
-      <p class="font-semibold text-xl">남은 시간</p>
+    <div class="flex flex-col items-center justify-center h-16 bg-black-5">
+      <p class="text-xl font-semibold">남은 시간</p>
     </div>
-    <div class="flex justify-center items-center h-24">
+    <div class="flex items-center justify-center h-24">
       <div class="flex gap-4 text-3xl">
         <div class="flex flex-col items-center">
           <span>{{ remainedTime.hours }}</span>
@@ -46,21 +47,21 @@ const requireConfirmation = () => {
         </div>
       </div>
     </div>
-    <div class="flex flex-col justify-center items-center h-16 bg-black-5">
-      <p class="font-semibold text-xl">문제</p>
+    <div class="flex flex-col items-center justify-center h-16 bg-black-5">
+      <p class="text-xl font-semibold">문제</p>
     </div>
-    <div class="flex justify-center items-center gap-6 my-4">
+    <div class="flex items-center justify-center gap-6 my-4">
       <div class="flex items-center gap-2">
-        <div class="w-3 h-3 bg-black-4 rounded-full"></div>
+        <div class="w-3 h-3 rounded-full bg-black-4"></div>
         <span class="text-sm">안 푼 문제</span>
       </div>
       <div class="flex items-center gap-2">
-        <div class="w-3 h-3 bg-orange-1 rounded-full"></div>
+        <div class="w-3 h-3 rounded-full bg-orange-1"></div>
         <span class="text-sm">푼 문제</span>
       </div>
     </div>
 
-    <div class="h-full grid grid-cols-5 auto-rows-max gap-2 px-7">
+    <div class="grid h-full grid-cols-5 gap-2 auto-rows-max px-7">
       <button
         v-for="(userAnswer, index) in userAnswers"
         @click="emit('setCurrentProblemIndex', index)"
@@ -77,16 +78,16 @@ const requireConfirmation = () => {
     <Button
       @click="requireConfirmation"
       label="제출하기"
-      class="w-44 h-9 mb-5 mx-auto"
+      class="mx-auto mb-5 w-44 h-9"
       size="large"
       rounded
     />
     <ConfirmDialog group="headless">
       <template #container="{ message, acceptCallback, rejectCallback }">
         <div
-          class="flex flex-col items-center px-20 py-8 bg-surface-0 dark:bg-surface-900 rounded"
+          class="flex flex-col items-center px-20 py-8 rounded bg-surface-0 dark:bg-surface-900"
         >
-          <span class="font-bold text-2xl block mb-2">{{
+          <span class="block mb-2 text-2xl font-bold">{{
             message.header
           }}</span>
           <p class="mb-0">{{ message.message }}</p>

@@ -1,9 +1,16 @@
 <script setup>
-import { onMounted, watch, ref, watchEffect } from "vue";
+// Prime Vue
+import { SelectButton } from "primevue";
+
+// Store
+import { useProblemUpdateStore } from "@/store/problemUpdateStore";
+
+// toastui
 import Editor from "@toast-ui/editor";
 import "@toast-ui/editor/dist/toastui-editor.css";
-import { SelectButton } from "primevue";
-import { useProblemUpdateStore } from "@/store/problemUpdateStore";
+
+// Vue Core
+import { onMounted, watch, ref, watchEffect } from "vue";
 
 const problemUpdateStore = useProblemUpdateStore();
 const { updateField } = problemUpdateStore;
@@ -61,7 +68,7 @@ onMounted(() => {
 });
 
 watchEffect(() => {
-  if (props.problem?.problem_type === 'ox') {
+  if (props.problem?.problem_type === "ox") {
     handleAnswerChange(props.problem.answer);
   }
 });
@@ -78,16 +85,16 @@ watch(
 
 <template>
   <div class="mb-8">
-    <h3 class="text-gray-2 mb-4">문제 수정</h3>
-    <div ref="questionEditor" class="text-gray-700 min-h-4 mb-10 w-full"></div>
+    <h3 class="mb-4 text-gray-2">문제 수정</h3>
+    <div ref="questionEditor" class="w-full mb-10 text-gray-700 min-h-4"></div>
 
-    <h3 class="text-gray-2 mb-4">보기 수정</h3>
+    <h3 class="mb-4 text-gray-2">보기 수정</h3>
     <!-- 객관식 보기 -->
     <div
       v-if="props.problem?.problem_type === 'multiple_choice'"
       class="space-y-4"
     >
-      <ol class="list-decimal space-y-2 text-gray-700">
+      <ol class="space-y-2 text-gray-700 list-decimal">
         <!-- 보기 1번 -->
         <li class="flex items-center gap-2">
           <input
@@ -96,13 +103,13 @@ watch(
             value="1"
             :checked="props.problem.answer === '1'"
             @change="handleAnswerChange('1')"
-            class="cursor-pointer rounded-full h-7 w-7 border-2 border-black-3 place-items-center text-black-2 hover:bg-black-5"
+            class="border-2 rounded-full cursor-pointer h-7 w-7 border-black-3 place-items-center text-black-2 hover:bg-black-5"
           />
           <input
             type="text"
             :value="props.problem.option_one"
             @input="handleOptionChange('one', $event.target.value)"
-            class="md:h-9 w-full border border-gray-300 rounded p-1"
+            class="w-full p-1 border border-gray-300 rounded md:h-9"
             placeholder="선택지 내용"
           />
         </li>
@@ -114,13 +121,13 @@ watch(
             value="2"
             :checked="props.problem.answer === '2'"
             @change="handleAnswerChange('2')"
-            class="cursor-pointer rounded-full h-7 w-7 border-2 border-black-3 place-items-center text-black-2 hover:bg-black-5"
+            class="border-2 rounded-full cursor-pointer h-7 w-7 border-black-3 place-items-center text-black-2 hover:bg-black-5"
           />
           <input
             type="text"
             :value="props.problem.option_two"
             @input="handleOptionChange('two', $event.target.value)"
-            class="md:h-9 w-full border border-gray-300 rounded p-1"
+            class="w-full p-1 border border-gray-300 rounded md:h-9"
             placeholder="선택지 내용"
           />
         </li>
@@ -132,13 +139,13 @@ watch(
             value="3"
             :checked="props.problem.answer === '3'"
             @change="handleAnswerChange('3')"
-            class="cursor-pointer rounded-full h-7 w-7 border-2 border-black-3 place-items-center text-black-2 hover:bg-black-5"
+            class="border-2 rounded-full cursor-pointer h-7 w-7 border-black-3 place-items-center text-black-2 hover:bg-black-5"
           />
           <input
             type="text"
             :value="props.problem.option_three"
             @input="handleOptionChange('three', $event.target.value)"
-            class="md:h-9 w-full border border-gray-300 rounded p-1"
+            class="w-full p-1 border border-gray-300 rounded md:h-9"
             placeholder="선택지 내용"
           />
         </li>
@@ -150,13 +157,13 @@ watch(
             value="4"
             :checked="props.problem.answer === '4'"
             @change="handleAnswerChange('4')"
-            class="cursor-pointer rounded-full h-7 w-7 border-2 border-black-3 place-items-center text-black-2 hover:bg-black-5"
+            class="border-2 rounded-full cursor-pointer h-7 w-7 border-black-3 place-items-center text-black-2 hover:bg-black-5"
           />
           <input
             type="text"
             :value="props.problem.option_four"
             @input="handleOptionChange('four', $event.target.value)"
-            class="md:h-9 w-full border border-gray-300 rounded p-1"
+            class="w-full p-1 border border-gray-300 rounded md:h-9"
             placeholder="선택지 내용"
           />
         </li>
@@ -174,7 +181,7 @@ watch(
 
     <div
       ref="explanationEditor"
-      class="text-gray-700 min-h-4 mb-10 w-full"
+      class="w-full mb-10 text-gray-700 min-h-4"
     ></div>
   </div>
 </template>

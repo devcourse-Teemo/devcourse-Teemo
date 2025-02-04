@@ -1,27 +1,27 @@
 <script setup>
-// Icons
-import calendarIcon from "@/assets/icons/exam-room/fi-rr-calendar.svg";
-import userIcon from "@/assets/icons/exam-room/fi-rr-user.svg";
-import folderIcon from "@/assets/icons/exam-room/fi-rr-folder.svg";
-import timeFastIcon from "@/assets/icons/exam-room/fi-rr-time-fast.svg";
-
-// Vue Core
-import { ref, computed, watchEffect } from "vue";
-import { useRouter } from "vue-router";
-
-// PrimeVue
-import { useToast } from "primevue/usetoast";
-import Dialog from "primevue/dialog";
-
 // API
-import { inviteAPI } from "@/api/invite";
-import { workbookAPI } from "@/api/workbook";
 import { userAPI } from "@/api/user";
 import { authAPI } from "@/api/auth";
+import { inviteAPI } from "@/api/invite";
+import { workbookAPI } from "@/api/workbook";
+
+// Icons
+import userIcon from "@/assets/icons/exam-room/fi-rr-user.svg";
+import folderIcon from "@/assets/icons/exam-room/fi-rr-folder.svg";
+import calendarIcon from "@/assets/icons/exam-room/fi-rr-calendar.svg";
+import timeFastIcon from "@/assets/icons/exam-room/fi-rr-time-fast.svg";
+
+// PrimeVue
+import Dialog from "primevue/dialog";
+import { useToast } from "primevue/usetoast";
 
 // Utils
-import { formatMsToHourMinute } from "@/utils/formatMsToHour";
 import { formatterIntlKR } from "@/utils/formatterIntlKR.js";
+import { formatMsToHourMinute } from "@/utils/formatMsToHour";
+
+// Vue Core
+import { useRouter } from "vue-router";
+import { ref, computed, watchEffect } from "vue";
 
 const props = defineProps({
   inviteData: {
@@ -162,11 +162,11 @@ watchEffect(() => {
   <div
     @click="showExamInfo = true"
     v-if="!isRejected"
-    class="bg-orange-3 rounded-lg p-4 w-full text-gray-2"
+    class="w-full p-4 rounded-lg bg-orange-3 text-gray-2"
   >
     <!-- 문제집 제목 -->
     <div class="item-between" aria-label="title-wrapper">
-      <h3 class="mb-4 font-medium text-lg">{{ workbookTitle }}</h3>
+      <h3 class="mb-4 text-lg font-medium">{{ workbookTitle }}</h3>
     </div>
     <!-- 시험장 생성자 -->
     <div class="flex items-center gap-2 mb-2 text-sm">
@@ -192,13 +192,13 @@ watchEffect(() => {
     <div v-if="!isAccepted" class="flex gap-2">
       <button
         @click.stop="handleAccept"
-        class="bg-black-1/10 text-white px-2 py-1 rounded-md font-medium hover:bg-black-1/20 w-1/2 flex justify-center items-center"
+        class="flex items-center justify-center w-1/2 px-2 py-1 font-medium text-white rounded-md bg-black-1/10 hover:bg-black-1/20"
       >
         승인
       </button>
       <button
         @click.stop="handleDeny"
-        class="bg-red-500/60 deny text-white px-2 py-1 rounded-md font-medium hover:bg-red-600/60 w-1/2 flex justify-center items-center"
+        class="flex items-center justify-center w-1/2 px-2 py-1 font-medium text-white rounded-md bg-red-500/60 deny hover:bg-red-600/60"
       >
         거절
       </button>
@@ -213,7 +213,7 @@ watchEffect(() => {
     <div class="flex flex-col gap-4">
       <!-- 문제집 이름 -->
       <div>
-        <h4 class="text-xl font-medium flex items-center gap-3 mb-1">
+        <h4 class="flex items-center gap-3 mb-1 text-xl font-medium">
           <img :src="folderIcon" alt="문제집 이름" class="w-6 h-6" />
           {{ workbookTitle }}
         </h4>
@@ -221,7 +221,7 @@ watchEffect(() => {
       </div>
       <!-- 초대자 정보 -->
       <div>
-        <h4 class="text-xl font-medium flex items-center gap-3 mb-1">
+        <h4 class="flex items-center gap-3 mb-1 text-xl font-medium">
           <img :src="userIcon" alt="초대한 사람" class="w-6 h-6" />
           초대한 사람
         </h4>
@@ -229,7 +229,7 @@ watchEffect(() => {
       </div>
       <!-- 시험 일정 -->
       <div>
-        <h4 class="text-xl font-medium flex items-center gap-3 mb-1">
+        <h4 class="flex items-center gap-3 mb-1 text-xl font-medium">
           <img :src="calendarIcon" alt="시험 일정" class="w-6 h-6" />
           기간
         </h4>
@@ -240,7 +240,7 @@ watchEffect(() => {
       </div>
       <!-- 소요 시간 -->
       <div>
-        <h4 class="text-xl font-medium flex items-center gap-3 mb-1">
+        <h4 class="flex items-center gap-3 mb-1 text-xl font-medium">
           <img :src="timeFastIcon" alt="소요 시간" class="w-6 h-6" />
           소요 시간
         </h4>

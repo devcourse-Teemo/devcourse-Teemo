@@ -1,18 +1,29 @@
 <script setup>
-import { ref, computed, onMounted, watchEffect } from "vue";
-import { Avatar, ToggleSwitch, MultiSelect, Button } from "primevue";
-import { useToast } from "primevue/usetoast";
+// Apis
 import { pointAPI } from "@/api/point";
-import { getCurrentGradeInfo } from "@/utils/getCurrentGradeInfo";
-import { RouterLink } from "vue-router";
-import defaultProfileIMG from "@/assets/default-profile-image.svg";
 import { categoryAPI } from "@/api/category";
-import { useProblemUpdateStore } from "@/store/problemUpdateStore";
-import { useRouter } from "vue-router";
-import { storeToRefs } from "pinia";
-import { useProblemStore } from "@/store/problemStore";
-import { toRaw } from "vue";
+
+// Icons
+import defaultProfileIMG from "@/assets/default-profile-image.svg";
+
+// PrimeVue
+import { useToast } from "primevue/usetoast";
 import { useConfirm } from "primevue/useconfirm";
+import { Avatar, MultiSelect, Button } from "primevue";
+
+// Store
+import { storeToRefs } from "pinia";
+
+import { useProblemStore } from "@/store/problemStore";
+import { useProblemUpdateStore } from "@/store/problemUpdateStore";
+
+// Utils
+import { getCurrentGradeInfo } from "@/utils/getCurrentGradeInfo";
+
+// Vue Core
+import { toRaw } from "vue";
+import { RouterLink, useRouter } from "vue-router";
+import { ref, computed, onMounted, watchEffect } from "vue";
 
 const props = defineProps({
   problem: {
@@ -68,7 +79,7 @@ const handleTitleChange = (event) => {
 // 카테고리 변경 감지
 const handleCategoryChange = (event) => {
   const rawValue = toRaw(event?.value || []);
-  
+
   if (!rawValue.length) {
     problemUpdateStore.updateField("category", null);
     return;
@@ -216,11 +227,11 @@ onMounted(async () => {
 </script>
 
 <template>
-  <div class="w-full item-between mb-8">
+  <div class="w-full mb-8 item-between">
     <RouterLink
       v-if="author?.id && routeConfig"
       :to="routeConfig"
-      class="flex gap-2 items-center"
+      class="flex items-center gap-2"
     >
       <Avatar
         :image="author?.avatar_url"
@@ -235,19 +246,19 @@ onMounted(async () => {
             {{ userGrade?.current?.name || "등급 없음" }}
           </span>
         </p>
-        <span class="text-black-3 text-sm" aria-label="최종 수정일">
+        <span class="text-sm text-black-3" aria-label="최종 수정일">
           {{ new Date(problem?.updated_at).toLocaleString() }}
         </span>
       </div>
     </RouterLink>
 
-    <nav class="item-middle gap-2">
-      <button @click="handleCancel" class="bg-black-5 px-4 py-1 rounded-full">
+    <nav class="gap-2 item-middle">
+      <button @click="handleCancel" class="px-4 py-1 rounded-full bg-black-5">
         취소
       </button>
       <button
         @click="handleUpdate"
-        class="bg-orange-1 text-white px-4 py-1 rounded-full"
+        class="px-4 py-1 text-white rounded-full bg-orange-1"
       >
         수정
       </button>
@@ -258,14 +269,14 @@ onMounted(async () => {
     <form class="flex-1">
       <input
         type="text"
-        class="text-4xl font-bold mb-4 border border-gray-300 rounded p-2 w-full"
+        class="w-full p-2 mb-4 text-4xl font-bold border border-gray-300 rounded"
         :maxlength="20"
         v-model="problem.title"
         required
         @change="handleTitleChange"
       />
       <div class="flex items-center gap-2 text-sm">
-        <fieldset class="flex items-center gap-2 w-full mb-4">
+        <fieldset class="flex items-center w-full gap-2 mb-4">
           <label for="category" class="mr-1">카테고리</label>
           <MultiSelect
             v-model="selectedCategory"
@@ -274,12 +285,12 @@ onMounted(async () => {
             optionLabel="name"
             filter
             :selection-limit="1"
-            class="md:h-9 items-center md:w-60 font-regular text-sm py-2 mr-2"
+            class="items-center py-2 mr-2 text-sm md:h-9 md:w-60 font-regular"
             @filter="onFilterCategory"
             @change="handleCategoryChange"
           >
             <template #footer>
-              <div class="p-3 flex justify-between">
+              <div class="flex justify-between p-3">
                 <Button
                   label="카테고리 추가"
                   severity="secondary"

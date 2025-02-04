@@ -1,10 +1,17 @@
 <script setup>
+// Components
+import Grade from "@/components/layout/Grade.vue";
+import Profile from "@/components/layout/Profile.vue";
+
+// Store
+import { storeToRefs } from "pinia";
+
+import { useAuthStore } from "@/store/authStore";
+
+// Vue Core
 import { onMounted } from "vue";
 import { RouterLink } from "vue-router";
-import Profile from "@/components/layout/Profile.vue";
-import Grade from "@/components/layout/Grade.vue";
-import { useAuthStore } from "@/store/authStore";
-import { storeToRefs } from "pinia";
+
 const Card1Img = new URL(
   "@/assets/icons/createProblemsCard.svg",
   import.meta.url,
@@ -54,7 +61,7 @@ onMounted(() => {
       <!-- 카드 1 -->
       <RouterLink
         to="/problem-editor"
-        class="bg-beige-2 rounded-lg p-6 flex flex-col justify-between gap-2 items-end"
+        class="flex flex-col items-end justify-between gap-2 p-6 rounded-lg bg-beige-2"
       >
         <div class="w-full">
           <p
@@ -72,7 +79,7 @@ onMounted(() => {
       <!-- 카드 2 -->
       <RouterLink
         to="/exam-room"
-        class="bg-beige-2 rounded-lg p-6 flex flex-col justify-between gap-2 items-end"
+        class="flex flex-col items-end justify-between gap-2 p-6 rounded-lg bg-beige-2"
       >
         <div class="w-full">
           <p

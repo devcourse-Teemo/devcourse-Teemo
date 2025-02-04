@@ -1,10 +1,20 @@
 <script setup>
+// APIs
 import { againViewProblemAPI } from "@/api/againViewProblem";
+
+// PrimeVue
 import { Button, useToast } from "primevue";
-import { computed, watch, ref, onBeforeUnmount } from "vue";
-import Viewer from "@toast-ui/editor/dist/toastui-editor-viewer";
-import { useAuthStore } from "@/store/authStore";
+
+// Store
 import { storeToRefs } from "pinia/dist/pinia";
+
+import { useAuthStore } from "@/store/authStore";
+
+// toastui
+import Viewer from "@toast-ui/editor/dist/toastui-editor-viewer";
+
+// Vue Core
+import { computed, watch, ref, onBeforeUnmount } from "vue";
 
 const authStore = useAuthStore();
 const { user } = storeToRefs(authStore);
@@ -129,7 +139,7 @@ onBeforeUnmount(() => {
       />
       <h2>문제 {{ currentProblemIndex + 1 }} : {{ problem?.title }}</h2>
     </div>
-    <div ref="el" class="w-full overflow-hidden mt-6 mb-12"></div>
+    <div ref="el" class="w-full mt-6 mb-12 overflow-hidden"></div>
 
     <!-- 4지선다 -->
     <template v-if="problem?.problem_type === 'multiple_choice'">
@@ -159,7 +169,7 @@ onBeforeUnmount(() => {
 
     <!-- OX -->
     <template v-if="problem?.problem_type === 'ox'">
-      <div class="flex justify-center items-center gap-4 mb-20">
+      <div class="flex items-center justify-center gap-4 mb-20">
         <button
           v-for="(option, index) in ['O', 'X']"
           @click="emit('selectAnswer', option)"

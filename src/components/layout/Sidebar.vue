@@ -1,9 +1,11 @@
 <script setup>
+// Vue Core
 import { RouterLink } from "vue-router";
+
 const logoPath = new URL("@/assets/logos/logo.svg", import.meta.url).href;
-const libraryPath = new URL("@/assets/icons/library.svg", import.meta.url).href;
-const boardPath = new URL("@/assets/icons/board.svg", import.meta.url).href;
 const testPath = new URL("@/assets/icons/test.svg", import.meta.url).href;
+const boardPath = new URL("@/assets/icons/board.svg", import.meta.url).href;
+const libraryPath = new URL("@/assets/icons/library.svg", import.meta.url).href;
 </script>
 
 <template>
@@ -29,7 +31,7 @@ const testPath = new URL("@/assets/icons/test.svg", import.meta.url).href;
     <nav class="w-full px-6">
       <!-- Library 섹션 -->
       <div class="mb-[24px]">
-        <div class="text-black-2 text-sm px-2 mb-2 font-medium">
+        <div class="px-2 mb-2 text-sm font-medium text-black-2">
           <img :src="libraryPath" alt="" class="w-3.5 h-auto pr-0.5" />
           LIBRARY
         </div>

@@ -1,9 +1,16 @@
 <script setup>
-import { ref, onMounted } from "vue";
-import { Paginator, useToast } from "primevue";
-import Comment from "@/components/layout/Comment.vue";
-import { commentAPI } from "@/api/comment";
+// APIs
 import { authAPI } from "@/api/auth";
+import { commentAPI } from "@/api/comment";
+
+// Components
+import Comment from "@/components/layout/Comment.vue";
+
+// PrimeVue
+import { Paginator, useToast } from "primevue";
+
+// Vue Core
+import { ref, onMounted } from "vue";
 
 const props = defineProps({
   comments: {

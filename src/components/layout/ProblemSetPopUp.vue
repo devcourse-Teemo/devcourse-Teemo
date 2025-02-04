@@ -1,10 +1,9 @@
 <script setup>
+// APIs
 import { userAPI } from "@/api/user";
 import { workbookAPI } from "@/api/workbook";
-import { useAuthStore } from "@/store/authStore";
-import { getCurrentGradeInfo } from "@/utils/getCurrentGradeInfo";
-import { Form } from "@primevue/forms";
-import { storeToRefs } from "pinia";
+
+// PrimeVue
 import {
   Button,
   InputText,
@@ -13,6 +12,17 @@ import {
   ToggleSwitch,
   useToast,
 } from "primevue";
+import { Form } from "@primevue/forms";
+
+// Store
+import { storeToRefs } from "pinia";
+
+import { useAuthStore } from "@/store/authStore";
+
+// Utils
+import { getCurrentGradeInfo } from "@/utils/getCurrentGradeInfo";
+
+// Vue Core
 import { onBeforeMount, ref, onBeforeUnmount, onMounted, computed } from "vue";
 
 const {

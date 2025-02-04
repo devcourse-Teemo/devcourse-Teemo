@@ -1,33 +1,35 @@
 <script setup>
-// Vue Core
-import { ref, computed, watchEffect } from "vue";
-import { useRouter } from "vue-router";
+// APIs
+import { userAPI } from "@/api/user";
+import { inviteAPI } from "@/api/invite";
+import { testCenterAPI } from "@/api/testCenter";
 
 // Components
-import ExamCard from "@/pages/exam-room/components/ExamCard.vue";
 import InvitedExamCard from "./components/InvitedExamCard.vue";
+
+import ExamCard from "@/pages/exam-room/components/ExamCard.vue";
 
 // Icons
 import createIcon from "@/assets/icons/exam-room/edit_square.svg";
 
-// APIs
-import { testCenterAPI } from "@/api/testCenter";
-import { inviteAPI } from "@/api/invite";
+// PrimeVue
+import { ConfirmDialog, useToast } from "primevue";
 
-// Store & Composables
+// Store
 import { useAuthStore } from "@/store/authStore";
-import { useConfirm } from "primevue/useconfirm";
-import { ConfirmDialog } from "primevue";
+
+// Utils
 import { getCurrentGradeInfo } from "@/utils/getCurrentGradeInfo";
-import { userAPI } from "@/api/user";
-import { useToast } from "primevue";
+
+// Vue Core
+import { useRouter } from "vue-router";
+import { ref, computed, watchEffect } from "vue";
 
 // Constants
 const ITEMS_PER_PAGE = 4;
 
 // Store & Composables instances
 const authStore = useAuthStore();
-const confirm = useConfirm();
 const router = useRouter();
 const toast = useToast();
 
@@ -219,7 +221,7 @@ watchEffect(fetchExams);
 
     <!-- 내가 만든 시험 섹션 -->
     <section class="w-full mb-8">
-      <div class="flex gap-2 items-center mb-4">
+      <div class="flex items-center gap-2 mb-4">
         <h2 class="text-xl font-medium text-gray-2">내가 만든 시험</h2>
         <button
           v-if="showMoreButtons.myExams"
@@ -256,7 +258,7 @@ watchEffect(fetchExams);
 
     <!-- 초대받은 시험 섹션 -->
     <section class="w-full mb-8">
-      <div class="flex gap-2 items-center mb-4">
+      <div class="flex items-center gap-2 mb-4">
         <h2 class="text-xl font-medium text-gray-2">초대받은 시험</h2>
         <button
           v-if="showMoreButtons.invited"

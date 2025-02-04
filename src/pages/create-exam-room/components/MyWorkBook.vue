@@ -1,7 +1,12 @@
 <script setup>
-import shareIcon from "@/assets/icons/my-problem-sets/share.svg";
-import { ref, watchEffect } from "vue";
+// APIs
 import { workbookAPI } from "@/api/workbook.js";
+
+// Icons
+import shareIcon from "@/assets/icons/my-problem-sets/share.svg";
+
+// Vue Core
+import { ref, watchEffect } from "vue";
 
 const { visibleMyBooks, selectedWorkbook } = defineProps({
   selectedWorkbook: Object,
@@ -57,13 +62,13 @@ watchEffect(async () => {
           {{ book.description || "설명 없음" }}
         </p>
       </div>
-      <div class="flex justify-between items-center mt-2">
+      <div class="flex items-center justify-between mt-2">
         <!-- 공유받은 문제집인 경우 생성자 정보 표시 -->
         <div v-if="book.user" class="flex items-center gap-2">
-          <img 
-            :src="book.user.avatar_url || '/default-avatar.png'" 
-            alt="프로필" 
-            class="w-7 h-7 rounded-full"
+          <img
+            :src="book.user.avatar_url || '/default-avatar.png'"
+            alt="프로필"
+            class="rounded-full w-7 h-7"
           />
           <span class="text-black-1">{{ book.user.name }}</span>
         </div>

@@ -1,14 +1,27 @@
 <script setup>
-import { ref, reactive, watchEffect, onMounted } from "vue";
-import arrowLeftPath from "@/assets/icons/problem-editor/arrow-left.svg";
+// APIs
+import { workbookAPI } from "@/api/workbook";
+
+// Components
+import ProblemSetPopUp from "@/components/layout/ProblemSetPopUp.vue";
+
+// Icons
 import folderPath from "@/assets/icons/problem-editor/folder.svg";
 import arrowTopPath from "@/assets/icons/problem-editor/arrow-top.svg";
+import arrowLeftPath from "@/assets/icons/problem-editor/arrow-left.svg";
+
+// PrimeVue
 import { Button } from "primevue";
-import { workbookAPI } from "@/api/workbook";
-import { useCreateProblemStore } from "@/store/createProblemStore";
-import { useAuthStore } from "@/store/authStore";
+
+// Store
 import { storeToRefs } from "pinia";
-import ProblemSetPopUp from "@/components/layout/ProblemSetPopUp.vue";
+
+import { useAuthStore } from "@/store/authStore";
+import { useCreateProblemStore } from "@/store/createProblemStore";
+
+// Vue Core
+import { ref, reactive, watchEffect, onMounted } from "vue";
+
 const props = defineProps({
   storedFolder: {
     type: Object,
@@ -97,18 +110,18 @@ onMounted(() => {
       <img
         :src="arrowLeftPath"
         alt="뒤로가기"
-        class="align-middle items-center"
+        class="items-center align-middle"
       />
     </Button>
     <div
       ref="popup"
-      class="flex items-center cursor-pointer relative rounded"
+      class="relative flex items-center rounded cursor-pointer"
       @click="onClickFolder"
     >
       <p class="p-1.5 bg-orange-1 rounded mr-4">
         <img :src="folderPath" alt="폴더" class="align-middle" />
       </p>
-      <span class="text-xl font-medium mr-4">{{
+      <span class="mr-4 text-xl font-medium">{{
         createdProblems.folder.title
       }}</span>
       <img
@@ -127,7 +140,7 @@ onMounted(() => {
         v-model:show-add-popup="isCreateNewFolder"
         @clickProblemSet="setFolderFromList"
         @clickAddProblemSet="onCreateNewFolder"
-        class="w-64 absolute top-full left-1/2 -translate-x-1/2 mt-3 z-50"
+        class="absolute z-50 w-64 mt-3 -translate-x-1/2 top-full left-1/2"
       />
     </div>
     <Button label="저장하기" @click="emits('submitProblems')"></Button>

@@ -1,16 +1,26 @@
 <script setup>
-import { useRouter } from "vue-router";
-import ProblemEditorHeader from "./components/ProblemEditorHeader.vue";
-import ProblemEditorLists from "./components/ProblemEditorLists.vue";
-import ProblemEditorMain from "./components/ProblemEditorMain.vue";
-import ProblemEditorGuide from "./components/ProblemEditorGuide.vue";
-import { ref, toRaw, watch, nextTick } from "vue";
+// APIs
 import { problemAPI } from "@/api/problem";
+
+// Components
+import ProblemEditorMain from "./components/ProblemEditorMain.vue";
+import ProblemEditorLists from "./components/ProblemEditorLists.vue";
+import ProblemEditorGuide from "./components/ProblemEditorGuide.vue";
+import ProblemEditorHeader from "./components/ProblemEditorHeader.vue";
+
+// PrimeVue
 import { useToast } from "primevue/usetoast";
 import { useConfirm } from "primevue/useconfirm";
 import ConfirmDialog from "primevue/confirmdialog";
-import { useCreateProblemStore } from "@/store/createProblemStore";
+
+// Store
 import { storeToRefs } from "pinia";
+
+import { useCreateProblemStore } from "@/store/createProblemStore";
+
+// Vue Core
+import { useRouter } from "vue-router";
+import { ref, toRaw, watch, nextTick } from "vue";
 
 const toast = useToast();
 const router = useRouter();
@@ -146,14 +156,14 @@ watch(
 );
 </script>
 <template>
-  <div class="flex flex-col h-screen w-full">
+  <div class="flex flex-col w-full h-screen">
     <!-- Confirm 창 -->
     <ConfirmDialog />
     <ProblemEditorHeader
       @submit-problems="submitProblems"
       @on-going-back="onGoingBack"
     />
-    <div class="flex flex-row h-min-screen w-screen flex-grow">
+    <div class="flex flex-row flex-grow w-screen h-min-screen">
       <ProblemEditorLists class="w-2/12" />
       <ProblemEditorMain
         v-if="targetProblem.idx !== -1"

@@ -1,15 +1,26 @@
 <script setup>
-import { ref, computed, watchEffect, onBeforeUnmount } from "vue";
-import { Avatar } from "primevue";
-import { useAuthStore } from "@/store/authStore";
-import { useToast } from "primevue/usetoast";
+// APIs
 import { pointAPI } from "@/api/point";
-import { getCurrentGradeInfo } from "@/utils/getCurrentGradeInfo";
-import { problemLikeAPI } from "@/api/problemLike";
 import { supabase } from "@/api/index.js";
-import { RouterLink } from "vue-router";
-import thumbsUpIcon from "@/assets/icons/problem-board/fi-rr-thumbs-up.svg";
+import { problemLikeAPI } from "@/api/problemLike";
+
+// Icons
 import defaultProfileIMG from "@/assets/default-profile-image.svg";
+import thumbsUpIcon from "@/assets/icons/problem-board/fi-rr-thumbs-up.svg";
+
+// Prime vue
+import { Avatar } from "primevue";
+import { useToast } from "primevue/usetoast";
+
+// Store
+import { useAuthStore } from "@/store/authStore";
+
+// Utils
+import { getCurrentGradeInfo } from "@/utils/getCurrentGradeInfo";
+
+// Vue Core
+import { RouterLink } from "vue-router";
+import { ref, computed, watchEffect, onBeforeUnmount } from "vue";
 
 const props = defineProps({
   problem: {
@@ -150,11 +161,11 @@ const routeConfig = computed(() => {
 </script>
 
 <template>
-  <div class="flex justify-between flex-col gap-10">
+  <div class="flex flex-col justify-between gap-10">
     <RouterLink
       v-if="routeConfig"
       :to="routeConfig"
-      class="inline-flex gap-2 items-center w-fit"
+      class="inline-flex items-center gap-2 w-fit"
     >
       <Avatar
         :image="author?.avatar_url"
@@ -169,7 +180,7 @@ const routeConfig = computed(() => {
             {{ userGrade?.name || "등급 없음" }}
           </span>
         </p>
-        <span class="text-black-3 text-sm" aria-label="최종 수정일">
+        <span class="text-sm text-black-3" aria-label="최종 수정일">
           {{ new Date(problem?.updated_at).toLocaleString() }}
         </span>
       </div>
@@ -177,13 +188,13 @@ const routeConfig = computed(() => {
 
     <div class="flex items-center gap-4 mb-10">
       <div class="flex-1">
-        <h1 class="text-4xl font-bold mb-4">{{ problem?.title }}</h1>
+        <h1 class="mb-4 text-4xl font-bold">{{ problem?.title }}</h1>
         <div class="flex items-center gap-4 text-sm text-gray-500">
-          <span class="bg-gray-100 px-2 py-1 rounded">{{
+          <span class="px-2 py-1 bg-gray-100 rounded">{{
             problem?.category?.name
           }}</span>
           <div
-            class="flex items-center gap-1 px-2 py-1 rounded-full transition"
+            class="flex items-center gap-1 px-2 py-1 transition rounded-full"
           >
             <img
               :src="thumbsUpIcon"
@@ -199,7 +210,7 @@ const routeConfig = computed(() => {
       <div class="relative flex items-center justify-center">
         <button
           v-if="isAuthor"
-          class="menu-trigger w-12 h-12 rounded-full hover:bg-gray-100 transition-colors flex items-center justify-center"
+          class="flex items-center justify-center w-12 h-12 transition-colors rounded-full menu-trigger hover:bg-gray-100"
           @click="toggleMenu"
           aria-label="더보기"
         >
@@ -208,7 +219,7 @@ const routeConfig = computed(() => {
         <button
           v-else
           @click="handleToggleLike"
-          class="item-middle gap-1 px-2 py-2 rounded-full transition w-14 h-14"
+          class="gap-1 px-2 py-2 transition rounded-full item-middle w-14 h-14"
           :class="
             hasLiked ? 'bg-orange-100 text-orange-1' : 'hover:bg-gray-100'
           "
@@ -223,12 +234,12 @@ const routeConfig = computed(() => {
 
         <div
           v-if="showMenu"
-          class="menu-container absolute right-0 top-12 mt-2 flex bg-white rounded-lg shadow-lg border border-gray-200 overflow-hidden flex-col"
+          class="absolute right-0 flex flex-col mt-2 overflow-hidden bg-white border border-gray-200 rounded-lg shadow-lg menu-container top-12"
           style="z-index: 1000"
         >
           <button
             @click="emit('menu-action', 'edit')"
-            class="flex items-center gap-2 px-4 py-2 hover:bg-gray-100 active:bg-gray-200 transition-colors"
+            class="flex items-center gap-2 px-4 py-2 transition-colors hover:bg-gray-100 active:bg-gray-200"
           >
             <i class="pi pi-pencil"></i>
             <span>수정하기</span>
@@ -236,7 +247,7 @@ const routeConfig = computed(() => {
           <div class="border-b border-gray-200"></div>
           <button
             @click="emit('menu-action', 'delete')"
-            class="flex items-center gap-2 px-4 py-2 hover:bg-gray-100 active:bg-gray-200 transition-colors text-red-600"
+            class="flex items-center gap-2 px-4 py-2 text-red-600 transition-colors hover:bg-gray-100 active:bg-gray-200"
           >
             <i class="pi pi-trash"></i>
             <span>삭제하기</span>

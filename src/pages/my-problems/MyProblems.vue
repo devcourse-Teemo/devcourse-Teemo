@@ -1,17 +1,30 @@
 <script setup>
-import ProblemTable from "@/components/layout/ProblemTable.vue";
-import Search from "@/components/layout/Search.vue";
-import { ref, watch, onBeforeMount, computed } from "vue";
-import { SORT } from "@/const/sorts";
-import { useAuthStore } from "@/store/authStore";
-import { storeToRefs } from "pinia";
-import { againViewProblemAPI } from "@/api/againViewProblem";
+// APIs
 import { problemAPI } from "@/api/problem";
 import { categoryAPI } from "@/api/category";
+import { againViewProblemAPI } from "@/api/againViewProblem";
+
+// Const
+import { SORT } from "@/const/sorts";
+
+// Components
+import Search from "@/components/layout/Search.vue";
+import ProblemTable from "@/components/layout/ProblemTable.vue";
+
+// Store
+import { storeToRefs } from "pinia";
+
+import { useAuthStore } from "@/store/authStore";
+
+// Prime Vue
 import { useToast } from "primevue/usetoast";
-import { useRouter } from "vue-router";
-import { useRoute } from "vue-router";
+
+// Utils
 import { formatDate } from "@/utils/formatDate";
+
+// Vue Core
+import { useRouter, useRoute } from "vue-router";
+import { ref, watch, onBeforeMount, computed } from "vue";
 
 const route = useRoute();
 const router = useRouter();

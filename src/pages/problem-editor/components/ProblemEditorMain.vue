@@ -1,6 +1,26 @@
 <script setup>
-import deletePath from "@/assets/icons/problem-editor/delete.svg";
+// APIs
+import { storageAPI } from "@/api/storage";
+import { categoryAPI } from "@/api/category";
+
+// Icons
 import alarmPath from "@/assets/icons/problem-editor/alarm.svg";
+import deletePath from "@/assets/icons/problem-editor/delete.svg";
+
+// PrimeVue
+import { useToast } from "primevue/usetoast";
+import { Button, MultiSelect, InputText, SelectButton } from "primevue";
+
+// Store
+import { storeToRefs } from "pinia";
+
+import { useCreateProblemStore } from "@/store/createProblemStore";
+
+// toastui
+import Editor from "@toast-ui/editor";
+import "@toast-ui/editor/dist/toastui-editor.css";
+
+// Vue Core
 import {
   reactive,
   ref,
@@ -10,15 +30,6 @@ import {
   watch,
   toRaw,
 } from "vue";
-import { Button, MultiSelect, InputText, SelectButton } from "primevue";
-
-import Editor from "@toast-ui/editor";
-import "@toast-ui/editor/dist/toastui-editor.css";
-import { useToast } from "primevue/usetoast";
-import { storageAPI } from "@/api/storage";
-import { categoryAPI } from "@/api/category";
-import { useCreateProblemStore } from "@/store/createProblemStore";
-import { storeToRefs } from "pinia";
 
 const createProblemStore = useCreateProblemStore();
 const { createdProblems, targetProblem } = storeToRefs(createProblemStore);
@@ -244,24 +255,24 @@ watch(
 </script>
 
 <template>
-  <main class="flex flex-col gap-4 flex-grow">
+  <main class="flex flex-col flex-grow gap-4">
     <article
-      class="flex items-top flex-grow pl-4 pr-10 py-4 gap-3"
+      class="flex flex-grow gap-3 py-4 pl-4 pr-10 items-top"
       v-if="currentIdx !== -1"
     >
       <img
         :src="deletePath"
         alt="문제 삭제하기"
-        class="align-top bg-black-5 p-1 rounded-md w-8 h-8 hover:scale-110"
+        class="w-8 h-8 p-1 align-top rounded-md bg-black-5 hover:scale-110"
         role="button"
         @click="emits('deleteProblem')"
       />
       <form
-        class="border-2 border-black-3 flex flex-col flex-grow px-6 pb-6 pt-4 rounded-md"
+        class="flex flex-col flex-grow px-6 pt-4 pb-6 border-2 rounded-md border-black-3"
       >
-        <fieldset class="addDivider mb-4 block">
+        <fieldset class="block mb-4 addDivider">
           <label class="mr-3">문제 유형 선택</label>
-          <ul class="none inline cursor-pointer">
+          <ul class="inline cursor-pointer none">
             <li
               v-for="type in PROBLEM_TYPES"
               :key="type"
@@ -277,7 +288,7 @@ watch(
             </li>
           </ul>
         </fieldset>
-        <fieldset class="addDivider block mb-4">
+        <fieldset class="block mb-4 addDivider">
           <label for="category" class="mr-4"
             >카테고리 <sup class="text-black-2">*</sup></label
           >
@@ -289,12 +300,12 @@ watch(
             filter
             :invalid="localProblem.category?.length == 0"
             :selection-limit="1"
-            class="md:h-9 items-center md:w-60 font-regular text-sm py-2 mr-6 relative border border-red"
+            class="relative items-center py-2 mr-6 text-sm border md:h-9 md:w-60 font-regular border-red"
             @filter="(e) => onFilterCategory(e)"
             panel-class="custom-overlay"
           >
             <template #footer>
-              <div class="p-3 flex justify-between">
+              <div class="flex justify-between p-3">
                 <Button
                   label="카테고리 추가"
                   severity="secondary"
@@ -309,7 +320,7 @@ watch(
           </MultiSelect>
         </fieldset>
 
-        <fieldset class="addDivider flex flex-col gap-4 mb-4">
+        <fieldset class="flex flex-col gap-4 mb-4 addDivider">
           <legend class="my-2">
             문제 {{ currentIdx + 1 }} <sup class="text-black-2">*</sup>
           </legend>
@@ -317,7 +328,7 @@ watch(
             type="text"
             v-model="localProblem.title"
             name="problem"
-            class="md:h-10 w-full"
+            class="w-full md:h-10"
             placeholder="문제의 제목을 작성해 주세요.(20자)"
             :invalid="localProblem.title?.trim() == ''"
             @change="
@@ -345,7 +356,7 @@ watch(
               :value="idx + 1"
               :checked="localProblem.answer === String(idx + 1)"
               @change="localProblem.answer = String(idx + 1)"
-              class="cursor-pointer rounded-full h-7 w-7 border-2 border-black-3 place-items-center text-black-2 hover:bg-black-5"
+              class="border-2 rounded-full cursor-pointer h-7 w-7 border-black-3 place-items-center text-black-2 hover:bg-black-5"
               :invalid="false"
             /><InputText
               type="text"
@@ -363,7 +374,7 @@ watch(
                 ]
               "
               name="option"
-              class="md:h-9 w-full"
+              class="w-full md:h-9"
               placeholder="선택지 내용"
               :invalid="
                 localProblem[
@@ -388,7 +399,7 @@ watch(
             />
           </div>
         </fieldset>
-        <fieldset class="addDivider mb-4">
+        <fieldset class="mb-4 addDivider">
           <legend class="my-2">풀이</legend>
           <div ref="explanationEditor" class="mb-6"></div>
         </fieldset>
@@ -401,11 +412,11 @@ watch(
               type="text"
               v-model="localProblem.origin_source"
               name="origin_source"
-              class="md:h-10 flex-grow"
+              class="flex-grow md:h-10"
               :invalid="localProblem.origin_source?.trim() == ''"
             />
           </div>
-          <p class="flex gap-2 text-black-1 items-center text-xs">
+          <p class="flex items-center gap-2 text-xs text-black-1">
             <img :src="alarmPath" alt="사용자 출처 저작권 안내 문구" />문제의
             출처를 최대한 자세하게 써주세요. 타인의 문제를 허락없이 공유하여
             법적인 제제를 받는 경우, 풀고에서 책임지지 않습니다.

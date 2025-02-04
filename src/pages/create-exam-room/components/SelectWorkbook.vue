@@ -1,12 +1,22 @@
 <script setup>
-import { ref, computed, watchEffect, watch } from "vue";
-import { useAuthStore } from "@/store/authStore";
-import SearchBar from "@/components/layout/SearchBar.vue";
-import MyWorkBook from "./MyWorkBook.vue";
+// APIs
 import { workbookAPI } from "@/api/workbook";
+
+// Components
+import MyWorkBook from "./MyWorkBook.vue";
+
+import SearchBar from "@/components/layout/SearchBar.vue";
+
+// PrimeVue
 import Paginator from "primevue/paginator";
-import { useRoute } from "vue-router";
+
+// Store
+import { useAuthStore } from "@/store/authStore";
 import { useWorkbookStore } from "@/store/workbookStore";
+
+// Vue Core
+import { useRoute } from "vue-router";
+import { ref, computed, watchEffect, watch } from "vue";
 
 const props = defineProps({
   selectedWorkbook: {
@@ -48,28 +58,28 @@ const paginatedWorkbooks = computed(() => {
 const fetchWorkbooks = async () => {
   try {
     const userId = authStore.user.id;
-    
+
     // 내 문제집과 공유받은 문제집을 동시에 로드
     await Promise.all([
       workbookAPI.getAllByUserId(userId),
-      workbookStore.loadSharedWorkbooks(userId)
+      workbookStore.loadSharedWorkbooks(userId),
     ]);
 
     // 각 문제집의 문제 수 로드
     const myWorkbooks = await workbookAPI.getAllByUserId(userId);
     const sharedWorkbooks = workbookStore.sharedWorkbooks;
-    
+
     // 모든 문제집에 대해 문제 수 로드
     const allWorkbooks = [...myWorkbooks, ...sharedWorkbooks];
     await Promise.all(
       allWorkbooks.map(async (workbook) => {
         await workbookStore.fetchProblemCount(workbook.id);
-      })
+      }),
     );
 
     // 문제 수가 0개인 문제집 필터링
     workbooks.value = allWorkbooks.filter(
-      workbook => workbookStore.problemCounts[workbook.id] > 0
+      (workbook) => workbookStore.problemCounts[workbook.id] > 0,
     );
   } catch (error) {
     console.error("문제집 로드 실패:", error);
@@ -110,7 +120,7 @@ watchEffect(() => {
 
 <template>
   <div class="w-full">
-    <h2 class="text-2xl text-black-1 font-medium mb-6">문제집 선택하기</h2>
+    <h2 class="mb-6 text-2xl font-medium text-black-1">문제집 선택하기</h2>
 
     <!-- 검색 바 -->
     <div class="mb-8">
@@ -120,12 +130,12 @@ watchEffect(() => {
     <!-- 문제집 목록 -->
     <section class="flex flex-col gap-5">
       <div class="flex items-center gap-4">
-        <h2 class="font-semibold text-xl">보관한 문제집</h2>
+        <h2 class="text-xl font-semibold">보관한 문제집</h2>
       </div>
 
       <div
         v-if="paginatedWorkbooks.length === 0"
-        class="text-center py-8 text-gray-500"
+        class="py-8 text-center text-gray-500"
       >
         보관한 문제집이 텅 비었습니다. <br />
         문제집을 생성한 후 시험장을 이용할 수 있습니다.

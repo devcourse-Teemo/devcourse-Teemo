@@ -1,19 +1,32 @@
 <script setup>
-import { ref, onMounted, provide, watch, nextTick } from "vue";
-import { useRoute, useRouter } from "vue-router";
-import { Dialog, ToggleSwitch, useConfirm, useToast } from "primevue";
-
+// APIs
 import { authAPI } from "@/api/auth";
 import { problemAPI } from "@/api/problem";
 import { workbookAPI } from "@/api/workbook";
+
+// Components
 import Search from "@/components/layout/Search.vue";
 import ProblemTable from "@/components/layout/ProblemTable.vue";
+import ConfirmModal from "@/components/layout/ConfirmModal.vue";
+
+// Icons
 import pen from "@/assets/icons/my-problem-sets-update/pen.svg";
 import share from "@/assets/icons/my-problem-sets-update/share.svg";
-import ConfirmModal from "@/components/layout/ConfirmModal.vue";
-import { useAuthStore } from "@/store/authStore";
+
+// Prime Vue
+import { Dialog, ToggleSwitch, useConfirm, useToast } from "primevue";
+
+// Store
 import { storeToRefs } from "pinia";
+
+import { useAuthStore } from "@/store/authStore";
+
+// Utils
 import { formatDate } from "@/utils/formatDate";
+
+// Vue Core
+import { useRoute, useRouter } from "vue-router";
+import { ref, onMounted, provide, watch, nextTick } from "vue";
 
 const toast = useToast();
 const route = useRoute();

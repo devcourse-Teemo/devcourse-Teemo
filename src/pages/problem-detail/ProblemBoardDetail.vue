@@ -1,19 +1,29 @@
 <script setup>
-import { ref, onMounted } from "vue";
-import { useRoute, useRouter } from "vue-router";
-import { Dialog, Button } from "primevue";
-import { useProblemStore } from "@/store/problemStore";
-import { useAuthStore } from "@/store/authStore";
-import { problemLikeAPI } from "@/api/problemLike";
+// APIs
 import { commentAPI } from "@/api/comment";
-import { useToast } from "primevue/usetoast";
+import { problemAPI } from "@/api/problem";
+import { problemLikeAPI } from "@/api/problemLike";
 
+// Components
 import ProblemHeader from "./components/ProblemHeader.vue";
 import ProblemContent from "./components/ProblemContent.vue";
 import ProblemSolution from "./components/ProblemSolution.vue";
+
 import CommentList from "../problem-set-detail/components/CommentList.vue";
-import { problemAPI } from "@/api/problem";
+
 import ConfirmModal from "@/components/layout/ConfirmModal.vue";
+
+// Prime Vue
+import { Dialog, Button } from "primevue";
+import { useToast } from "primevue/usetoast";
+
+// Store
+import { useAuthStore } from "@/store/authStore";
+import { useProblemStore } from "@/store/problemStore";
+
+// Vue Core
+import { ref, onMounted } from "vue";
+import { useRoute, useRouter } from "vue-router";
 
 const itemsPerPage = 10;
 
