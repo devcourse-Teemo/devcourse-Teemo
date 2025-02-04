@@ -151,13 +151,12 @@ onBeforeMount(() => {
 </script>
 
 <template>
-  <div class="relative">
+  <div @click="toggle" class="relative group">
     <Button
-      @click="toggle"
       icon="pi pi-bell"
       severity="secondary"
       variant="text"
-      class="!py-0"
+      class="!py-0 group-hover:bg-gray-50"
       aria-haspopup="true"
       aria-controls="notification_menu"
       rounded
@@ -167,7 +166,7 @@ onBeforeMount(() => {
       v-if="newNotificationCount > 0"
       :value="newNotificationCount"
       size="small"
-      class="absolute top-0 right-0"
+      class="absolute top-0 right-0 cursor-pointer"
     />
   </div>
   <Menu

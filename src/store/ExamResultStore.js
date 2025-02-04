@@ -44,7 +44,9 @@ export const useExamResultStore = defineStore("examResult", {
   actions: {
     //시험점수 가져오기
     async initializeExamData(uid, testResultId) {
-      if (this.isInitializing) return;
+      if (this.isInitializing) {
+        this.isInitializing = false;
+      }
       this.isInitializing = true;
       try {
         // uid 및 testResultId 유효성 검사
@@ -57,7 +59,10 @@ export const useExamResultStore = defineStore("examResult", {
         }
 
         // 점수 데이터 호출
-        const { total, correct } = await testResultAPI.getScore(testResultId);
+        const { total, correct } = await testResultAPI.getScore(
+          testResultId,
+          uid,
+        );
 
         // 상태 업데이트
         this.totalCount = total;
@@ -121,6 +126,7 @@ export const useExamResultStore = defineStore("examResult", {
       }
       this.isFetchingProblems = true;
       try {
+        //workbookProblem에서 바로 export중
         const fetchedProblems = await fetchProblemsForTestResult(testResultId);
 
         if (!fetchedProblems || fetchedProblems.length === 0) {
@@ -128,13 +134,13 @@ export const useExamResultStore = defineStore("examResult", {
           return;
         }
 
-        // 문제 데이터 정렬 및 추가 필드 생성
+        //problem_id 순서대로 정렬
         this.problems = fetchedProblems
-          .sort((a, b) => a.id - b.id) // problem_id 순서대로 정렬
+          .sort((a, b) => a.id - b.id)
           .map((problem, index) => ({
             ...problem,
-            number: index + 1, // 문제 번호 추가
-            flagged: false, // 플래그 상태 초기화
+            number: index + 1,
+            flagged: false,
           }));
 
         // 첫 번째 문제 설정
@@ -159,6 +165,7 @@ export const useExamResultStore = defineStore("examResult", {
       try {
         const testCenterData = await problemHistoryAPI.getTestCenterId(
           testResultId,
+          userId,
         );
         if (!testCenterData) {
           console.error("fetchProblems: test_center_id를 가져오지 못했습니다.");

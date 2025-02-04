@@ -1,5 +1,5 @@
 <script setup>
-import { ref, watch, onBeforeMount } from "vue";
+import { ref, watch, onBeforeMount, watchEffect } from "vue";
 import { useRouter } from "vue-router";
 import Menu from "primevue/menu";
 import LoginModal from "./LoginModal.vue";
@@ -8,10 +8,13 @@ import { userAPI } from "@/api/user";
 import { useAuthStore } from "@/store/authStore";
 import { storeToRefs } from "pinia";
 import { RouterLink } from "vue-router";
+import { useRoute } from "vue-router";
+import { supabase } from "@/api";
 
 const pointPath = new URL("@/assets/icons/point.svg", import.meta.url).href;
 
 const router = useRouter();
+const route = useRoute();
 
 // 유저 정보
 const authStore = useAuthStore();
@@ -57,19 +60,23 @@ const openMenu = (event) => {
   menu.value.toggle(event); // 클릭 위치에서 메뉴 표시
 };
 
+supabase
+  .channel("point-channel")
+  .on(
+    "postgres_changes",
+    { event: "INSERT", schema: "public", table: "point" },
+    ({ new: newPoint }) => {
+      if (newPoint.uid === user.value.id) {
+        userInfo.value.total_points += newPoint.change_value;
+      }
+    },
+  )
+  .subscribe();
+
 onBeforeMount(async () => {
   await authStore.initializeAuth();
+  userInfo.value = await userAPI.getOne(user.value.id);
 });
-
-watch(
-  () => user.value,
-  async (user) => {
-    if (user) {
-      userInfo.value = await userAPI.getOne(user.id);
-    }
-  },
-  { immediate: true },
-);
 </script>
 
 <template>

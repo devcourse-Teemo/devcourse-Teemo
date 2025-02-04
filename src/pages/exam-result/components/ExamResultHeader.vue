@@ -54,8 +54,8 @@ initializeAuth();
 </script>
 <template>
   <header class="w-full pt-20 pb-10 h-full">
-    <div class="flex items-center w-fit gap-8 mx-auto">
-      <div class="flex items-center gap-8 mr-[30rem]">
+    <div class="flex items-center w-fit gap-8 mx-auto -translate-x-32">
+      <div class="flex items-center gap-8 mr-[23rem]">
         <div class="flex flex-col items-center justify-center space-y-1">
           <img
             :src="profileImage"

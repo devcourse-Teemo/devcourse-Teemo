@@ -315,7 +315,7 @@ const onPageChange = (event) => {
       @keypress="handleKeyPress"
       maxlength="500"
       class="w-full max-w-full h-32 resize-none pt-3 px-6 rounded-lg text-sm bg-gray-100 border border-gray-300"
-      placeholder="문제집에 대해 어떻게 생각하시나요?"
+      placeholder="문제에 대해 어떻게 생각하시나요?"
     ></textarea>
 
     <Paginator

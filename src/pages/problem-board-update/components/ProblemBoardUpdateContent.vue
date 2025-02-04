@@ -1,5 +1,5 @@
 <script setup>
-import { onMounted, watch, ref } from "vue";
+import { onMounted, watch, ref, watchEffect } from "vue";
 import Editor from "@toast-ui/editor";
 import "@toast-ui/editor/dist/toastui-editor.css";
 import { SelectButton } from "primevue";
@@ -31,8 +31,13 @@ const handleOptionChange = (optionNumber, value) => {
   updateField(`option_${optionNumber}`, value);
 };
 
-// 답안 변경 감지
+// 사지선다 답안 변경 감지
 const handleAnswerChange = (value) => {
+  updateField("answer", value);
+};
+
+// OX 답안 변경 핸들러 추가
+const handleOXAnswerChange = (value) => {
   updateField("answer", value);
 };
 
@@ -53,6 +58,12 @@ onMounted(() => {
       change: handleEditorChange,
     },
   });
+});
+
+watchEffect(() => {
+  if (props.problem?.problem_type === 'ox') {
+    handleAnswerChange(props.problem.answer);
+  }
 });
 
 watch(

@@ -63,10 +63,12 @@ const getTestCenterParticipants = async (testCenterId) => {
     // 1. 시험장 정보와 생성자 정보 가져오기
     const { data: testCenter, error: testCenterError } = await supabase
       .from("test_center")
-      .select(`
+      .select(
+        `
         uid,
         user_info!inner(name)
-      `)
+      `,
+      )
       .eq("id", testCenterId)
       .single();
 
@@ -85,13 +87,16 @@ const getTestCenterParticipants = async (testCenterId) => {
     const { data: participants, error: userError } = await supabase
       .from("user_info")
       .select("name")
-      .in("id", invites.map(invite => invite.target_uid));
+      .in(
+        "id",
+        invites.map((invite) => invite.target_uid),
+      );
 
     if (userError) throw userError;
 
     return {
       creator: testCenter.user_info,
-      participants: participants || []
+      participants: participants || [],
     };
   } catch (error) {
     console.error("참가자 목록 조회 실패:", error);
@@ -112,7 +117,10 @@ const getAllByTestCenterId = async (testCenterId) => {
       .eq("id", testCenterId)
       .single();
 
-    const problems = [...data.workbook.workbook_problem];
+    const problems = [...data.workbook.workbook_problem].sort(
+      (a, b) => a.problem.id - b.problem.id,
+    );
+
     delete data.workbook.workbook_problem;
 
     if (error) throw error;

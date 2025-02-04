@@ -1,9 +1,18 @@
-import { useAuthStore } from "@/store/authStore.js";
 import { supabase } from "./index.js";
 
 const getAll = async () => {
   try {
     const { data, error } = await supabase.from("problem").select("*");
+    if (error) throw error;
+    return data;
+  } catch (error) {
+    console.error(error);
+  }
+};
+
+const getProblemInfo = async () => {
+  try {
+    const { data, error } = await supabase.rpc("problem_info");
     if (error) throw error;
     return data;
   } catch (error) {
@@ -481,6 +490,7 @@ const getRandom = async () => {
 };
 
 export const problemAPI = {
+  getProblemInfo,
   getAll,
   getAllShared,
   getAllByUserId,
