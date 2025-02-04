@@ -1,23 +1,24 @@
 import { createRouter, createWebHistory } from "vue-router";
+
+import { authAPI } from "@/api/auth";
 import DefaultLayout from "@/components/layout/DefaultLayout.vue";
 
 // 페이지 컴포넌트 가져오기
-import MyProblemSets from "@/pages/my-problem-sets/MyProblemSets.vue";
-import MyProblems from "@/pages/my-problems/MyProblems.vue";
-import ProblemBoard from "@/pages/problem-board/ProblemBoard.vue";
-import ProblemSetBoard from "@/pages/problem-set-board/ProblemSetBoard.vue";
-import ExamRoom from "@/pages/exam-room/ExamRoom.vue";
-import LandingPage from "@/pages/LandingPage.vue";
-import ExamHistory from "@/pages/exam-history/ExamHistory.vue";
-import ProblemSetBoardDetail from "@/pages/problem-set-detail/ProblemSetDetail.vue";
-import CreateExamRoom from "@/pages/create-exam-room/CreateExamRoom.vue";
-import ProblemBoardDetail from "@/pages/problem-detail/ProblemBoardDetail.vue";
-import MyProblemSetsUpdate from "@/pages/MyProblemSetsUpdate.vue";
-import Mypage from "@/pages/Mypage/Mypage.vue";
-import UserProfile from "@/pages/user-profile/UserProfile.vue";
 import Home from "@/pages/Home.vue";
 import NotFound from "@/pages/NotFound.vue";
-import { authAPI } from "@/api/auth";
+import Mypage from "@/pages/Mypage/Mypage.vue";
+import LandingPage from "@/pages/LandingPage.vue";
+import ExamRoom from "@/pages/exam-room/ExamRoom.vue";
+import MyProblems from "@/pages/my-problems/MyProblems.vue";
+import UserProfile from "@/pages/user-profile/UserProfile.vue";
+import ExamHistory from "@/pages/exam-history/ExamHistory.vue";
+import ProblemBoard from "@/pages/problem-board/ProblemBoard.vue";
+import MyProblemSets from "@/pages/my-problem-sets/MyProblemSets.vue";
+import CreateExamRoom from "@/pages/create-exam-room/CreateExamRoom.vue";
+import ProblemSetBoard from "@/pages/problem-set-board/ProblemSetBoard.vue";
+import ProblemBoardDetail from "@/pages/problem-detail/ProblemBoardDetail.vue";
+import ProblemSetBoardDetail from "@/pages/problem-set-detail/ProblemSetDetail.vue";
+import MyProblemSetsUpdate from "@/pages/problem-set-update/MyProblemSetsUpdate.vue";
 import ProblemBoardDetailUpdate from "@/pages/problem-board-update/ProblemBoardDetailUpdate.vue";
 
 const routes = [

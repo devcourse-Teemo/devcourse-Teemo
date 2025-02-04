@@ -1,17 +1,29 @@
 <script setup>
+// APIs
+import { userAPI } from "@/api/user";
+import { workbookAPI } from "@/api/workbook";
+
+// Icons
 import shareIcon from "@/assets/icons/my-problem-sets/share.svg";
 import createWorkbook from "@/assets/icons/my-problem-sets/createWorkbook.svg";
+
+// PrimeVue
 import Dialog from "primevue/dialog";
 import Button from "primevue/button";
 import { Avatar, useToast, ToggleSwitch } from "primevue";
-import { ref, computed, watch } from "vue";
+
+// Store
+import { storeToRefs } from "pinia";
+
 import { useAuthStore } from "@/store/authStore";
 import { useWorkbookStore } from "@/store/workbookStore";
-import { storeToRefs } from "pinia";
-import { workbookAPI } from "@/api/workbook";
-import { useRouter } from "vue-router";
-import { userAPI } from "@/api/user";
+
+// Utils
 import { getCurrentGradeInfo } from "@/utils/getCurrentGradeInfo";
+
+// Vue Core
+import { useRouter } from "vue-router";
+import { ref, computed, watch } from "vue";
 
 const authStore = useAuthStore();
 const workbookStore = useWorkbookStore();
@@ -186,7 +198,7 @@ watch(showDialog, (newVal) => {
     <h1 class="text-[42px] font-laundry">보관한 문제집</h1>
     <section class="flex flex-col gap-[18px] relative">
       <div class="flex items-center gap-[16px]">
-        <h2 class="font-semibold text-xl">내가 만든 문제집</h2>
+        <h2 class="text-xl font-semibold">내가 만든 문제집</h2>
         <button
           v-if="workbooks.length > 4"
           @click="toggleMyBooksViewAll"
@@ -195,7 +207,7 @@ watch(showDialog, (newVal) => {
           {{ isMyBooksViewAll ? "접기" : "전체보기 +" }}
         </button>
       </div>
-      <div v-if="workbooks.length === 0" class="text-gray-500 text-center py-6">
+      <div v-if="workbooks.length === 0" class="py-6 text-center text-gray-500">
         {{ noWorkbooksMessage }}
       </div>
       <div class="grid grid-cols-4 gap-4">
@@ -206,14 +218,14 @@ watch(showDialog, (newVal) => {
           @click="goToProblemSet(book.id)"
         >
           <div class="min-h-12">
-            <p class="font-pretend text-lg line-clamp-1 break-all">
+            <p class="text-lg break-all font-pretend line-clamp-1">
               {{ book.title }}
             </p>
             <p class="text-sm text-gray-1 line-clamp-2">
               {{ book.description }}
             </p>
           </div>
-          <div class="flex justify-between items-center">
+          <div class="flex items-center justify-between">
             <img
               v-if="book.shared"
               :src="shareIcon"
@@ -235,14 +247,14 @@ watch(showDialog, (newVal) => {
           @click="goToProblemSet(book.id)"
         >
           <div class="min-h-12">
-            <p class="font-pretend text-lg line-clamp-1 break-all">
+            <p class="text-lg break-all font-pretend line-clamp-1">
               {{ book.title }}
             </p>
             <p class="text-sm text-gray-1 line-clamp-2">
               {{ book.description }}
             </p>
           </div>
-          <div class="flex justify-between items-center">
+          <div class="flex items-center justify-between">
             <img
               v-if="book.shared"
               :src="shareIcon"
@@ -258,7 +270,7 @@ watch(showDialog, (newVal) => {
 
       <section class="flex flex-col gap-[18px] mt-16">
         <div class="flex items-center gap-[16px]">
-          <h2 class="font-semibold text-xl">공유 받은 문제집</h2>
+          <h2 class="text-xl font-semibold">공유 받은 문제집</h2>
           <button
             v-if="sharedWorkbooks.length > 4"
             @click="toggleSharedBooksViewAll"
@@ -269,7 +281,7 @@ watch(showDialog, (newVal) => {
         </div>
         <div
           v-if="sharedWorkbooks.length === 0"
-          class="text-gray-500 text-center py-6"
+          class="py-6 text-center text-gray-500"
         >
           현재 공유 받은 문제집이 없습니다.
         </div>
@@ -281,14 +293,14 @@ watch(showDialog, (newVal) => {
             @click="goToProblemSet(book.id)"
           >
             <div class="min-h-12">
-              <p class="font-pretend text-lg line-clamp-1 break-all">
+              <p class="text-lg break-all font-pretend line-clamp-1">
                 {{ book.title }}
               </p>
               <p class="text-sm text-gray-1 line-clamp-2">
                 {{ book.description }}
               </p>
             </div>
-            <div class="flex justify-between items-center">
+            <div class="flex items-center justify-between">
               <div class="flex items-center">
                 <Avatar
                   :image="book.user.avatar_url"
@@ -319,8 +331,8 @@ watch(showDialog, (newVal) => {
     class="custom-dialog w-[500px]"
   >
     <template #header>
-      <div class="flex justify-between items-center w-full border-gray-200">
-        <span class="font-bold text-lg text-gray-800 flex-shrink-0"
+      <div class="flex items-center justify-between w-full border-gray-200">
+        <span class="flex-shrink-0 text-lg font-bold text-gray-800"
           >문제집 추가하기</span
         >
         <button
@@ -338,10 +350,10 @@ watch(showDialog, (newVal) => {
         <input
           id="title"
           type="text"
-          class="w-full border rounded px-2 py-1"
+          class="w-full px-2 py-1 border rounded"
           v-model="title"
         />
-        <p class="text-xs text-gray-500 mt-1 text-right">
+        <p class="mt-1 text-xs text-right text-gray-500">
           {{ titleLength }} / 20
         </p>
       </div>
@@ -352,10 +364,10 @@ watch(showDialog, (newVal) => {
         <textarea
           id="description"
           rows="4"
-          class="w-full border rounded px-2 py-1 resize-none"
+          class="w-full px-2 py-1 border rounded resize-none"
           v-model="description"
         ></textarea>
-        <p class="text-xs text-gray-500 mt-1 text-right">
+        <p class="mt-1 text-xs text-right text-gray-500">
           {{ descriptionLength }} / 200
         </p>
       </div>

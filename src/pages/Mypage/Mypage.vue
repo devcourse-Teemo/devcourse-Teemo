@@ -1,9 +1,14 @@
 <script setup>
-import Profile from "@/components/layout/Profile.vue";
+// Components
 import MypageTabs from "./components/MypageTabs.vue";
+
 import Grade from "@/components/layout/Grade.vue";
-import { useAuthStore } from "@/store/authStore";
+import Profile from "@/components/layout/Profile.vue";
+
+// Store
 import { storeToRefs } from "pinia";
+
+import { useAuthStore } from "@/store/authStore";
 
 const authStore = useAuthStore();
 const { user } = storeToRefs(authStore);

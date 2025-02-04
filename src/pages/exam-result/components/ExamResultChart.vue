@@ -1,7 +1,12 @@
 <script setup>
-import { ref, watch } from "vue";
-import { useExamResultStore } from "@/store/ExamResultStore";
+// PrimeVue
 import Chart from "primevue/chart";
+
+// Store
+import { useExamResultStore } from "@/store/ExamResultStore";
+
+// Vue Core
+import { ref, watch } from "vue";
 
 const examResultStore = useExamResultStore();
 

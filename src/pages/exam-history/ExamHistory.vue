@@ -1,13 +1,23 @@
 <script setup>
-import Search from "@/components/layout/Search.vue";
-import { ref, onBeforeMount } from "vue";
-import ExamHistoryTable from "./components/examHistoryTable.vue";
+// APIs
 import { testResultAPI } from "@/api/testResult";
-import { useAuthStore } from "@/store/authStore";
+
+// Components
+import ExamHistoryTable from "./components/examHistoryTable.vue";
+
+import Search from "@/components/layout/Search.vue";
+
+// Store
 import { storeToRefs } from "pinia";
-import { useRouter } from "vue-router";
-import { useRoute } from "vue-router";
+
+import { useAuthStore } from "@/store/authStore";
+
+// Utils
 import { formatDate } from "@/utils/formatDate";
+
+// Vue Core
+import { ref, onBeforeMount } from "vue";
+import { useRoute, useRouter } from "vue-router";
 
 const route = useRoute();
 const router = useRouter();
@@ -37,7 +47,7 @@ onBeforeMount(() => {
 });
 </script>
 <template>
-  <div class="flex flex-col gap-14 relative">
+  <div class="relative flex flex-col gap-14">
     <h1 class="text-[42px] font-laundry">시험 내역</h1>
     <Search :show-status="false" @search="search" />
     <ExamHistoryTable :exams="exams" />

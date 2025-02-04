@@ -1,9 +1,16 @@
 <script setup>
-import { Avatar, AvatarGroup, Column, DataTable } from "primevue";
-import { formatMsToHourMinute } from "@/utils/formatMsToHour";
-import { formatDate } from "@/utils/formatDate";
-import { RouterLink } from "vue-router";
+// Components
 import EmptyText from "@/components/layout/EmptyText.vue";
+
+// PrimeVue
+import { Avatar, AvatarGroup, Column, DataTable } from "primevue";
+
+// Utils
+import { formatDate } from "@/utils/formatDate";
+import { formatMsToHourMinute } from "@/utils/formatMsToHour";
+
+// Vue Core
+import { RouterLink } from "vue-router";
 
 const { exams } = defineProps({
   exams: Array,
@@ -11,12 +18,12 @@ const { exams } = defineProps({
 </script>
 <template>
   <section class="flex flex-col gap-[18px]">
-    <div class="flex justify-between items-center">
-      <p class="font-semibold text-xl">{{ exams?.length }} 시험장</p>
+    <div class="flex items-center justify-between">
+      <p class="text-xl font-semibold">{{ exams?.length }} 시험장</p>
     </div>
 
     <!-- 테이블 -->
-    <div class="border border-black-5 rounded-2xl overflow-hidden">
+    <div class="overflow-hidden border border-black-5 rounded-2xl">
       <DataTable
         :value="exams"
         dataKey="id"

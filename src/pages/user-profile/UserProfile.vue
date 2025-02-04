@@ -1,14 +1,24 @@
 <script setup>
-import Profile from "@/components/layout/Profile.vue";
-import Grade from "@/components/layout/Grade.vue";
-import UserProfileTabs from "./components/UserProfileTabs.vue";
+// APIs
 import { userAPI } from "@/api/user";
-import { ref, watch } from "vue";
-import { useRoute } from "vue-router";
-import { useAuthStore } from "@/store/authStore";
-import { storeToRefs } from "pinia";
-import { useRouter } from "vue-router";
+
+// Components
+import UserProfileTabs from "./components/UserProfileTabs.vue";
+
+import Grade from "@/components/layout/Grade.vue";
+import Profile from "@/components/layout/Profile.vue";
+
+// PrimeVue
 import { useToast } from "primevue";
+
+// Store
+import { storeToRefs } from "pinia";
+
+import { useAuthStore } from "@/store/authStore";
+
+// Vue Core
+import { ref, watch } from "vue";
+import { useRoute, useRouter } from "vue-router";
 
 const route = useRoute();
 const router = useRouter();

@@ -1,6 +1,9 @@
 <script setup>
-import { ref, watch, computed } from "vue";
+// PrimeVue
 import Calendar from "primevue/calendar";
+
+// Vue Core
+import { ref, watch, computed } from "vue";
 
 const props = defineProps({
   examDateTime: {
@@ -77,8 +80,8 @@ watch([durationHours, durationMinutes], () => {
 </script>
 
 <template>
-  <h2 class="text-2xl text-black-1 font-medium mb-6">시간 선택하기</h2>
-  <div class="flex gap-20 w-full">
+  <h2 class="mb-6 text-2xl font-medium text-black-1">시간 선택하기</h2>
+  <div class="flex w-full gap-20">
     <div class="flex flex-col gap-2 align-top">
       <h3 class="text-lg font-medium">시작 날짜</h3>
       <Calendar
@@ -91,9 +94,9 @@ watch([durationHours, durationMinutes], () => {
         showButtonBar
       />
     </div>
-    <div class="flex gap-8 w-fit flex-col">
+    <div class="flex flex-col gap-8 w-fit">
       <!-- 시작 시간 -->
-      <div class="flex gap-4 w-full flex-col">
+      <div class="flex flex-col w-full gap-4">
         <h3 class="text-lg font-medium shrink-0">시작 시간</h3>
         <div class="flex items-center gap-2">
           <input
@@ -103,9 +106,9 @@ watch([durationHours, durationMinutes], () => {
             :max="23"
             placeholder="0"
             @input="(e) => handleHoursChange(e, 'start')"
-            class="w-1/2 border border-gray-300 rounded-md p-2 shadow-sm"
+            class="w-1/2 p-2 border border-gray-300 rounded-md shadow-sm"
           />
-          <label class="text-gray-600 block shrink-0 text-lg">시</label>
+          <label class="block text-lg text-gray-600 shrink-0">시</label>
           <input
             type="number"
             v-model="startMinutes"
@@ -114,16 +117,16 @@ watch([durationHours, durationMinutes], () => {
             placeholder="0"
             step="5"
             @input="(e) => handleMinutesChange(e, 'start')"
-            class="w-1/2 border border-gray-300 rounded-md p-2 shadow-sm"
+            class="w-1/2 p-2 border border-gray-300 rounded-md shadow-sm"
           />
-          <label class="text-gray-600 block shrink-0 text-lg">분</label>
-          <span class="text-gray-600 shrink-0 text-lg">부터</span>
+          <label class="block text-lg text-gray-600 shrink-0">분</label>
+          <span class="text-lg text-gray-600 shrink-0">부터</span>
         </div>
       </div>
       <!-- 지속 시간 -->
-      <div class="flex gap-4 w-full flex-col">
-        <h3 class="text-lg font-medium w-full">지속 시간 설정</h3>
-        <div class="flex items-center gap-2 w-full">
+      <div class="flex flex-col w-full gap-4">
+        <h3 class="w-full text-lg font-medium">지속 시간 설정</h3>
+        <div class="flex items-center w-full gap-2">
           <input
             type="number"
             v-model="durationHours"
@@ -131,9 +134,9 @@ watch([durationHours, durationMinutes], () => {
             :max="23"
             placeholder="0"
             @input="(e) => handleHoursChange(e, 'duration')"
-            class="w-1/2 border border-gray-300 rounded-md p-2 shadow-sm"
+            class="w-1/2 p-2 border border-gray-300 rounded-md shadow-sm"
           />
-          <label class="text-gray-600 block shrink-0 text-lg">시간</label>
+          <label class="block text-lg text-gray-600 shrink-0">시간</label>
           <input
             type="number"
             v-model="durationMinutes"
@@ -142,10 +145,10 @@ watch([durationHours, durationMinutes], () => {
             placeholder="0"
             step="5"
             @input="(e) => handleMinutesChange(e, 'duration')"
-            class="w-1/2 border border-gray-300 rounded-md p-2 shadow-sm"
+            class="w-1/2 p-2 border border-gray-300 rounded-md shadow-sm"
           />
-          <label class="text-gray-600 block shrink-0 text-lg">분</label>
-          <span class="text-gray-600 text-lg shrink-0">동안</span>
+          <label class="block text-lg text-gray-600 shrink-0">분</label>
+          <span class="text-lg text-gray-600 shrink-0">동안</span>
         </div>
       </div>
     </div>

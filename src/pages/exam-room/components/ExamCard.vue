@@ -1,22 +1,29 @@
 <script setup>
-import { ref, computed, watch } from "vue";
-import { useRouter } from "vue-router";
-import Dialog from "primevue/dialog";
-import Button from "primevue/button";
-import { useConfirm } from "primevue/useconfirm";
-import { useToast } from "primevue/usetoast";
-import { formatterIntlKR } from "@/utils/formatterIntlKR.js";
-import { formatMsToHourMinute } from "@/utils/formatMsToHour";
+// APIs
 import { inviteAPI } from "@/api/invite";
-import { testCenterAPI } from "@/api/testCenter";
 import { workbookAPI } from "@/api/workbook";
+import { testCenterAPI } from "@/api/testCenter";
 
 // Icons
-import calendarIcon from "@/assets/icons/exam-room/fi-rr-calendar.svg";
 import userIcon from "@/assets/icons/exam-room/fi-rr-user.svg";
-import folderIcon from "@/assets/icons/exam-room/fi-rr-folder.svg";
-import timeFastIcon from "@/assets/icons/exam-room/fi-rr-time-fast.svg";
 import trashIcon from "@/assets/icons/exam-room/fi-rr-trash.svg";
+import folderIcon from "@/assets/icons/exam-room/fi-rr-folder.svg";
+import calendarIcon from "@/assets/icons/exam-room/fi-rr-calendar.svg";
+import timeFastIcon from "@/assets/icons/exam-room/fi-rr-time-fast.svg";
+
+// PrimeVue
+import Dialog from "primevue/dialog";
+import Button from "primevue/button";
+import { useToast } from "primevue/usetoast";
+import { useConfirm } from "primevue/useconfirm";
+
+// Utils
+import { formatterIntlKR } from "@/utils/formatterIntlKR.js";
+import { formatMsToHourMinute } from "@/utils/formatMsToHour";
+
+// Vue Core
+import { useRouter } from "vue-router";
+import { ref, computed, watch } from "vue";
 
 const props = defineProps({
   id: {
@@ -173,18 +180,18 @@ watch(
 <template>
   <div
     @click="showExamInfo = true"
-    class="bg-orange-3 rounded-lg p-4 w-full text-gray-2 cursor-pointer"
+    class="w-full p-4 rounded-lg cursor-pointer bg-orange-3 text-gray-2"
   >
-    <div class="item-between mb-4">
+    <div class="mb-4 item-between">
       <h3
-        class="font-medium text-lg line-clamp-1"
+        class="text-lg font-medium line-clamp-1"
         v-tooltip.top="workbookTitle"
       >
         {{ workbookTitle }}
       </h3>
       <div v-if="showEditButtons" class="flex gap-2">
         <button
-          class="flex items-center justify-center w-8 h-8 bg-black-1/5 rounded-full hover:bg-black-1/10"
+          class="flex items-center justify-center w-8 h-8 rounded-full bg-black-1/5 hover:bg-black-1/10"
           @click.stop="confirmDelete"
         >
           <img :src="trashIcon" alt="delete icon" class="w-4 h-4" />
@@ -219,7 +226,7 @@ watch(
     <div class="flex flex-col gap-4">
       <!-- 문제집 이름 -->
       <div>
-        <h4 class="text-xl font-medium flex items-center gap-3 mb-1">
+        <h4 class="flex items-center gap-3 mb-1 text-xl font-medium">
           <img :src="folderIcon" alt="문제집 이름" class="w-6 h-6" />
           {{ workbookTitle }}
         </h4>
@@ -227,7 +234,7 @@ watch(
       </div>
       <!-- 참가자 정보 -->
       <div>
-        <h4 class="text-xl font-medium flex items-center gap-3 mb-1">
+        <h4 class="flex items-center gap-3 mb-1 text-xl font-medium">
           <img :src="userIcon" alt="참가 인원" class="w-6 h-6" />
           참가자 {{ participantCount + 1 }}명
         </h4>
@@ -244,7 +251,7 @@ watch(
       </div>
       <!-- 시험 일정 -->
       <div>
-        <h4 class="text-xl font-medium flex items-center gap-3 mb-1">
+        <h4 class="flex items-center gap-3 mb-1 text-xl font-medium">
           <img :src="calendarIcon" alt="시험 일정" class="w-6 h-6" />
           기간
         </h4>
@@ -255,7 +262,7 @@ watch(
       </div>
       <!-- 소요 시간 -->
       <div>
-        <h4 class="text-xl font-medium flex items-center gap-3 mb-1">
+        <h4 class="flex items-center gap-3 mb-1 text-xl font-medium">
           <img :src="timeFastIcon" alt="소요 시간" class="w-6 h-6" />
           소요 시간
         </h4>

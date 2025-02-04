@@ -1,12 +1,18 @@
 <script setup>
-import { RouterLink } from "vue-router";
-import { ref, onMounted, nextTick } from "vue";
-import { useConfirm, useToast } from "primevue";
-
+// APIs
 import { supabase } from "@/api";
 import { authAPI } from "@/api/auth";
 import { commentAPI } from "@/api/comment";
+
+// PrimeVue
+import { useConfirm, useToast } from "primevue";
+
+// Utils
 import { formatDateForComment } from "@/utils/formatDateForComment";
+
+// Vue Core
+import { RouterLink } from "vue-router";
+import { ref, onMounted, nextTick } from "vue";
 
 const { comment } = defineProps({
   comment: {
@@ -55,8 +61,6 @@ const commentUpdate = async () => {
 };
 
 const commentDelete = async () => {
-  console.log(comment.id);
-
   confirm.require({
     group: "delete",
     header: "해당 댓글을 제거 하시겠습니까?",

@@ -1,14 +1,24 @@
 <script setup>
-import Search from "@/components/layout/Search.vue";
-import { ref, computed, watch, onMounted } from "vue";
-import { Paginator, Select } from "primevue";
-import ProblemSet from "@/components/layout/ProblemSet.vue";
-import { SORT, SORTS } from "@/const/sorts";
+// APIs
 import { workbookAPI } from "@/api/workbook";
-import { formatDate } from "@/utils/formatDate";
+
+// Const
+import { SORT, SORTS } from "@/const/sorts";
+
+// Components
+import Search from "@/components/layout/Search.vue";
 import EmptyText from "@/components/layout/EmptyText.vue";
-import { useRouter } from "vue-router";
-import { useRoute } from "vue-router";
+import ProblemSet from "@/components/layout/ProblemSet.vue";
+
+// PrimeVue
+import { Paginator, Select } from "primevue";
+
+// Utils
+import { formatDate } from "@/utils/formatDate";
+
+// Vue Core
+import { useRouter, useRoute } from "vue-router";
+import { ref, computed, watch, onMounted } from "vue";
 
 const route = useRoute();
 const router = useRouter();

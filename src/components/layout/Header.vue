@@ -1,20 +1,27 @@
 <script setup>
-import { ref, watch, onBeforeMount, watchEffect } from "vue";
-import { useRouter } from "vue-router";
-import Menu from "primevue/menu";
+// APIs
+import { supabase } from "@/api";
+import { userAPI } from "@/api/user";
+
+// Components
 import LoginModal from "./LoginModal.vue";
 import Notification from "./Notification.vue";
-import { userAPI } from "@/api/user";
-import { useAuthStore } from "@/store/authStore";
+
+// PrimeVue
+import Menu from "primevue/menu";
+
+// Store
 import { storeToRefs } from "pinia";
-import { RouterLink } from "vue-router";
-import { useRoute } from "vue-router";
-import { supabase } from "@/api";
+
+import { useAuthStore } from "@/store/authStore";
+
+// Vue Core
+import { ref, onBeforeMount } from "vue";
+import { useRouter, RouterLink } from "vue-router";
 
 const pointPath = new URL("@/assets/icons/point.svg", import.meta.url).href;
 
 const router = useRouter();
-const route = useRoute();
 
 // 유저 정보
 const authStore = useAuthStore();

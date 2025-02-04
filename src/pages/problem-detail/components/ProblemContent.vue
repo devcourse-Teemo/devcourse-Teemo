@@ -1,7 +1,10 @@
 <script setup>
-import { ref, watch, nextTick, onBeforeUnmount } from "vue";
-import Viewer from "@toast-ui/editor/dist/toastui-editor-viewer";
+// toastui
 import "@toast-ui/editor/dist/toastui-editor-viewer.css";
+import Viewer from "@toast-ui/editor/dist/toastui-editor-viewer";
+
+// Vue Core
+import { ref, watch, nextTick, onBeforeUnmount } from "vue";
 
 const props = defineProps({
   problem: {
@@ -66,14 +69,14 @@ onBeforeUnmount(() => {
 
 <template>
   <div class="mb-8">
-    <div ref="viewerEl" class="text-gray-700 min-h-4 mb-10 w-full"></div>
+    <div ref="viewerEl" class="w-full mb-10 text-gray-700 min-h-4"></div>
 
     <!-- 객관식 보기 -->
     <div
       v-if="props.problem?.problem_type === 'multiple_choice'"
       class="space-y-4"
     >
-      <ol class="list-decimal space-y-2 text-gray-700">
+      <ol class="space-y-2 text-gray-700 list-decimal">
         <li v-if="props.problem.option_one" class="flex items-center gap-2">
           <strong class="text-xs rounded-full bg-black-6 w-7 h-7 item-middle"
             >1</strong
@@ -104,16 +107,16 @@ onBeforeUnmount(() => {
     <!-- OX 보기 -->
     <div
       v-if="props.problem?.problem_type === 'ox'"
-      class="space-y-4 w-fit items-center mx-auto"
+      class="items-center mx-auto space-y-4 w-fit"
     >
-      <ul class="flex gap-4 w-full">
+      <ul class="flex w-full gap-4">
         <li
-          class="flex items-center gap-2 rounded-md w-40 h-18 text-2xl font-extrabold item-middle px-4 py-2 bg-black-6 text-gray-1 shadow-sm transition"
+          class="flex items-center w-40 gap-2 px-4 py-2 text-2xl font-extrabold transition rounded-md shadow-sm h-18 item-middle bg-black-6 text-gray-1"
         >
           O
         </li>
         <li
-          class="flex items-center gap-2 rounded-md w-40 h-18 text-2xl font-extrabold item-middle px-4 py-2 bg-black-6 text-gray-1 shadow-sm transition"
+          class="flex items-center w-40 gap-2 px-4 py-2 text-2xl font-extrabold transition rounded-md shadow-sm h-18 item-middle bg-black-6 text-gray-1"
         >
           X
         </li>

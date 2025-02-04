@@ -1,4 +1,5 @@
 <script setup>
+// PrimeVue
 import { Chip } from "primevue";
 
 defineProps({
@@ -29,7 +30,7 @@ defineEmits(["remove"]);
       :label="label"
       :removable="false"
       @remove="$emit('remove')"
-      class="bg-orange-50 text-orange-500 border border-orange-200"
+      class="text-orange-500 border border-orange-200 bg-orange-50"
     >
       <template #content>
         <span class="flex items-center">
