@@ -61,7 +61,9 @@ const requireConfirmation = () => {
       </div>
     </div>
 
-    <div class="grid h-full grid-cols-5 gap-2 auto-rows-max px-7">
+    <div
+      class="grid flex-grow grid-cols-5 gap-2 auto-rows-max px-7 overflow-auto"
+    >
       <button
         v-for="(userAnswer, index) in userAnswers"
         @click="emit('setCurrentProblemIndex', index)"
@@ -74,14 +76,16 @@ const requireConfirmation = () => {
         {{ index + 1 }}
       </button>
     </div>
+    <div class="justify-end text-center mt-6">
+      <Button
+        @click="requireConfirmation"
+        label="제출하기"
+        class="mx-auto mb-5 w-44 h-6"
+        size="large"
+        rounded
+      />
+    </div>
 
-    <Button
-      @click="requireConfirmation"
-      label="제출하기"
-      class="mx-auto mb-5 w-44 h-9"
-      size="large"
-      rounded
-    />
     <ConfirmDialog group="headless">
       <template #container="{ message, acceptCallback, rejectCallback }">
         <div
