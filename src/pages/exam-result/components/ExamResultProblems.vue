@@ -13,7 +13,7 @@ import Viewer from "@toast-ui/editor/dist/toastui-editor-viewer";
 
 // Vue Core
 import { useRoute } from "vue-router";
-import { watch, computed, onMounted } from "vue";
+import { watch, computed, onMounted, watchEffect, nextTick } from "vue";
 
 const route = useRoute();
 const toast = useToast();
@@ -132,33 +132,25 @@ watch(
 
 let viewer, explanationViewer;
 
-onMounted(() => {
+onMounted(async () => {
+  await nextTick();
+
   viewer = new Viewer({
     el: document.querySelector("#viewer"),
-    initialValue: currentProblem.value?.question || "",
   });
   explanationViewer = new Viewer({
     el: document.querySelector("#explanationViewer"),
-    initialValue: currentProblem.value?.explanation || "",
   });
 });
 
-watch(
-  () => currentProblem.value?.question,
-  (newQuestion) => {
-    if (viewer) {
-      viewer.setMarkdown(newQuestion || "");
-    }
-  },
-);
-watch(
-  () => currentProblem.value?.explanation,
-  (newExplanation) => {
-    if (explanationViewer) {
-      explanationViewer.setMarkdown(newExplanation || "");
-    }
-  },
-);
+watchEffect(() => {
+  if (viewer) {
+    viewer.setMarkdown(currentProblem.value?.question || "");
+  }
+  if (explanationViewer) {
+    explanationViewer.setMarkdown(currentProblem.value?.explanation || "");
+  }
+});
 </script>
 
 <template>
@@ -177,7 +169,7 @@ watch(
 
     <template v-else>
       <div v-if="examResultStore.currentProblem">
-        <div v-if="(currentProblem = examResultStore.currentProblem)">
+        <div v-if="currentProblem = examResultStore.currentProblem">
           <div
             class="flex items-center justify-between gap-4 pb-4 mb-4 border-b border-gray-300"
           >
